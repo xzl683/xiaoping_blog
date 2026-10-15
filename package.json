@@ -9,6 +9,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "less": "^4.9.1",
+    "prettier": "^3.9.10",
     "vue": "^3.5.42"
   },
   "devDependencies": {
