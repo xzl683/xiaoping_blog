@@ -6,7 +6,7 @@ const { articles } = useArticlesStore();
 
 <template>
 	<div id="home">
-		<header class="site-header">
+		<header class="site-header dashed-section">
 			<a href="/" class="logo">我的博客</a>
 			<nav aria-label="主导航">
 				<a href="/">首页</a>
@@ -16,7 +16,7 @@ const { articles } = useArticlesStore();
 		</header>
 
 		<!-- Blog 介绍区（参考 Cloudflare 博客 Hero） -->
-		<section class="blog-intro">
+		<section class="blog-intro dashed-section">
 			<h1 class="blog-title">我的博客</h1>
 			<p class="blog-subtitle">
 				技术深度解析、产品更新，以及来自助力构建更美好互联网的团队的洞察。
@@ -38,7 +38,7 @@ const { articles } = useArticlesStore();
 			</article>
 		</main>
 
-		<aside class="sidebar" aria-label="侧边栏">
+		<aside class="sidebar dashed-section" aria-label="侧边栏">
 			<section>
 				<h2>关于我</h2>
 				<p>前端开发者，喜欢写博客。</p>
@@ -60,7 +60,7 @@ const { articles } = useArticlesStore();
 	min-height: 100vh;
 }
 
-/* ===== 两侧竖向虚线（从 header 底部到页面底部） ===== */
+/* ===== 两侧竖向虚线（从 header 底部延伸到页面底部） ===== */
 #home::before,
 #home::after {
 	content: "";
@@ -70,15 +70,51 @@ const { articles } = useArticlesStore();
 	width: 1px;
 	background-image: url(/images/dashed-vertical-light.svg);
 	background-repeat: repeat-y;
+	z-index: 0;
+	pointer-events: none;
 }
 #home::before {
-	left: calc(50% - 380px);
+	left: calc(50% - 360px);
 }
 #home::after {
-	right: calc(50% - 380px);
+	right: calc(50% - 360px);
 }
 
-/* ===== Header（底部横虚线 + 左右连接方框） ===== */
+/* ===== 通用：区块底部通栏横虚线（视口宽度） ===== */
+.dashed-section {
+	position: relative;
+}
+/* ::before 绘制通栏横虚线，::after 绘制左右连接方框 */
+.dashed-section::before {
+	content: "";
+	position: absolute;
+	left: calc(50% - 50vw);
+	right: calc(50% - 50vw);
+	bottom: 0;
+	height: 1px;
+	background-image: url(/images/dashed-horizontal-light.svg);
+	background-repeat: repeat-x;
+	background-position: bottom;
+	pointer-events: none;
+}
+.dashed-section::after {
+	content: "";
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: -6px;
+	height: 12px;
+	background-image:
+		url(/images/connector--light.svg),
+		url(/images/connector--light.svg);
+	background-repeat: no-repeat, no-repeat;
+	background-position: -6px 0, calc(100% + 6px) 0;
+	background-size: 12px 12px, 12px 12px;
+	z-index: var(--z-connector);
+	pointer-events: none;
+}
+
+/* ===== Header ===== */
 .site-header {
 	position: relative;
 	display: flex;
@@ -89,30 +125,6 @@ const { articles } = useArticlesStore();
 	height: 60px;
 	padding: 0 20px;
 	box-sizing: border-box;
-	background-image: url(/images/dashed-horizontal-light.svg);
-	background-repeat: repeat-x;
-	background-position: bottom;
-}
-
-.site-header::before,
-.site-header::after {
-	content: "";
-	z-index: var(--z-connector);
-	width: calc(var(--spacing) * 3);
-	height: calc(var(--spacing) * 3);
-	background-image: url(/images/connector--light.svg);
-	background-repeat: no-repeat;
-	background-size: contain;
-	position: absolute;
-	bottom: 0;
-}
-.site-header::before {
-	left: 0;
-	translate: -50% 50%;
-}
-.site-header::after {
-	right: 0;
-	translate: 50% 50%;
 }
 
 .logo {
@@ -135,36 +147,11 @@ const { articles } = useArticlesStore();
 
 /* ===== Blog 介绍区（Hero） ===== */
 .blog-intro {
-	position: relative;
 	width: 100%;
 	max-width: 760px;
 	padding: 60px 20px 40px;
 	box-sizing: border-box;
 	text-align: left;
-	background-image: url(/images/dashed-horizontal-light.svg);
-	background-repeat: repeat-x;
-	background-position: bottom;
-}
-
-.blog-intro::before,
-.blog-intro::after {
-	content: "";
-	z-index: var(--z-connector);
-	width: calc(var(--spacing) * 3);
-	height: calc(var(--spacing) * 3);
-	background-image: url(/images/connector--light.svg);
-	background-repeat: no-repeat;
-	background-size: contain;
-	position: absolute;
-	bottom: 0;
-}
-.blog-intro::before {
-	left: 0;
-	translate: -50% 50%;
-}
-.blog-intro::after {
-	right: 0;
-	translate: 50% 50%;
 }
 
 .blog-title {
@@ -205,6 +192,7 @@ const { articles } = useArticlesStore();
 	width: 1px;
 	background-image: url(/images/dashed-vertical-light.svg);
 	background-repeat: repeat-y;
+	pointer-events: none;
 }
 
 .article-card {
@@ -213,14 +201,17 @@ const { articles } = useArticlesStore();
 	padding-bottom: 48px;
 }
 
-/* 每篇文章底部：横向虚线（通栏） + 左/中/右三个连接方框 */
+/* 文章数为奇数时，第 1 篇占满一整行 */
+.article-card:first-child:nth-last-child(odd) {
+	grid-column: 1 / -1;
+}
+
+/* 每篇文章底部：通栏横虚线（视口宽度） + 左/中/右三个连接方框 */
 .article-card::after {
 	content: "";
 	position: absolute;
-	left: -20px;
-	right: -20px;
-	bottom: 0;
-	height: 1px;
+	bottom: -6px;
+	height: 12px;
 	z-index: 1;
 	background-image:
 		url(/images/connector--light.svg),
@@ -228,8 +219,29 @@ const { articles } = useArticlesStore();
 		url(/images/connector--light.svg),
 		url(/images/dashed-horizontal-light.svg);
 	background-repeat: no-repeat, no-repeat, no-repeat, repeat-x;
-	background-position: left bottom, center bottom, right bottom, bottom;
 	background-size: 12px 12px, 12px 12px, 12px 12px, auto;
+	background-position:
+		calc(50% - 366px) center,
+		calc(50% - 6px) center,
+		calc(50% + 354px) center,
+		center;
+	pointer-events: none;
+}
+
+/* 左列文章：通栏虚线从视口左端到右端 */
+.article-card:nth-child(odd)::after {
+	left: calc(-(100vw - 760px) / 2 - 20px);
+	right: calc(-(100vw + 760px) / 2 + 364px);
+}
+/* 右列文章 */
+.article-card:nth-child(even)::after {
+	left: calc(-(100vw - 760px) / 2 - 396px);
+	right: calc(-(100vw + 760px) / 2 + 740px);
+}
+/* 奇数篇时首篇占整行，虚线通栏 */
+.article-card:first-child:nth-last-child(odd)::after {
+	left: calc(-(100vw - 760px) / 2 - 20px);
+	right: calc(-(100vw + 760px) / 2 + 740px);
 }
 
 .article-date {
@@ -273,54 +285,12 @@ const { articles } = useArticlesStore();
 	text-decoration: none;
 }
 
-/* 手机端：单列，隐藏中间竖虚线，只保留左右连接方框 */
-@media (max-width: 600px) {
-	.articles-list {
-		grid-template-columns: 1fr;
-	}
-	.articles-list::before {
-		display: none;
-	}
-	.article-card::after {
-		background-image:
-			url(/images/connector--light.svg),
-			url(/images/connector--light.svg),
-			url(/images/dashed-horizontal-light.svg);
-		background-position: left bottom, right bottom, bottom;
-	}
-}
-
 /* ===== 侧边栏 ===== */
 .sidebar {
-	position: relative;
 	width: 100%;
 	max-width: 760px;
 	padding: 40px 20px;
 	box-sizing: border-box;
-	background-image: url(/images/dashed-horizontal-light.svg);
-	background-repeat: repeat-x;
-	background-position: bottom;
-}
-
-.sidebar::before,
-.sidebar::after {
-	content: "";
-	z-index: var(--z-connector);
-	width: calc(var(--spacing) * 3);
-	height: calc(var(--spacing) * 3);
-	background-image: url(/images/connector--light.svg);
-	background-repeat: no-repeat;
-	background-size: contain;
-	position: absolute;
-	bottom: 0;
-}
-.sidebar::before {
-	left: 0;
-	translate: -50% 50%;
-}
-.sidebar::after {
-	right: 0;
-	translate: 50% 50%;
 }
 
 /* ===== Footer ===== */
@@ -331,5 +301,30 @@ const { articles } = useArticlesStore();
 	box-sizing: border-box;
 	text-align: center;
 	color: var(--text);
+}
+
+/* ===== 手机端适配 ===== */
+@media (max-width: 760px) {
+	#home::before {
+		left: 20px;
+	}
+	#home::after {
+		right: 20px;
+	}
+	.articles-list {
+		grid-template-columns: 1fr;
+	}
+	.articles-list::before {
+		display: none;
+	}
+	.article-card::after {
+		left: -20px;
+		right: -20px;
+		background-image:
+			url(/images/connector--light.svg),
+			url(/images/connector--light.svg),
+			url(/images/dashed-horizontal-light.svg);
+		background-position: 14px center, calc(100% - 26px) center, center;
+	}
 }
 </style>
