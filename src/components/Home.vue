@@ -53,13 +53,32 @@ const { articles } = useArticlesStore();
 
 <style scoped>
 #home {
+	position: relative;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
 	min-height: 100vh;
 }
 
-/* ===== Header（带虚线 + 左右连接方框） ===== */
+/* ===== 两侧竖向虚线（从 header 底部到页面底部） ===== */
+#home::before,
+#home::after {
+	content: "";
+	position: absolute;
+	top: 60px;
+	bottom: 0;
+	width: 1px;
+	background-image: url(/images/dashed-vertical-light.svg);
+	background-repeat: repeat-y;
+}
+#home::before {
+	left: calc(50% - 380px);
+}
+#home::after {
+	right: calc(50% - 380px);
+}
+
+/* ===== Header（底部横虚线 + 左右连接方框） ===== */
 .site-header {
 	position: relative;
 	display: flex;
@@ -75,7 +94,6 @@ const { articles } = useArticlesStore();
 	background-position: bottom;
 }
 
-/* 左右两端的连接方框 */
 .site-header::before,
 .site-header::after {
 	content: "";
@@ -128,6 +146,27 @@ const { articles } = useArticlesStore();
 	background-position: bottom;
 }
 
+.blog-intro::before,
+.blog-intro::after {
+	content: "";
+	z-index: var(--z-connector);
+	width: calc(var(--spacing) * 3);
+	height: calc(var(--spacing) * 3);
+	background-image: url(/images/connector--light.svg);
+	background-repeat: no-repeat;
+	background-size: contain;
+	position: absolute;
+	bottom: 0;
+}
+.blog-intro::before {
+	left: 0;
+	translate: -50% 50%;
+}
+.blog-intro::after {
+	right: 0;
+	translate: 50% 50%;
+}
+
 .blog-title {
 	font-size: 2.5rem;
 	font-weight: 700;
@@ -143,32 +182,54 @@ const { articles } = useArticlesStore();
 	line-height: 1.6;
 }
 
-/* ===== 文章列表（两列布局） ===== */
+/* ===== 文章列表（两列网格） ===== */
 .articles-list {
 	position: relative;
-	display: flex;
-	flex-wrap: wrap;
-	gap: 48px 32px;
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	column-gap: 32px;
+	row-gap: 48px;
 	width: 100%;
 	max-width: 760px;
-	padding: 40px 20px;
+	padding: 40px 20px 0;
 	box-sizing: border-box;
-	background-image: url(/images/dashed-horizontal-light.svg);
-	background-repeat: repeat-x;
-	background-position: bottom;
+}
+
+/* 中间竖向虚线（仅文章列表区域） */
+.articles-list::before {
+	content: "";
+	position: absolute;
+	left: 50%;
+	top: 0;
+	bottom: 0;
+	width: 1px;
+	background-image: url(/images/dashed-vertical-light.svg);
+	background-repeat: repeat-y;
 }
 
 .article-card {
-	flex: 0 0 calc(50% - 16px);
-	margin-bottom: 0;
+	position: relative;
 	box-sizing: border-box;
+	padding-bottom: 48px;
 }
 
-/* 手机端：单列 */
-@media (max-width: 600px) {
-	.article-card {
-		flex: 0 0 100%;
-	}
+/* 每篇文章底部：横向虚线（通栏） + 左/中/右三个连接方框 */
+.article-card::after {
+	content: "";
+	position: absolute;
+	left: -20px;
+	right: -20px;
+	bottom: 0;
+	height: 1px;
+	z-index: 1;
+	background-image:
+		url(/images/connector--light.svg),
+		url(/images/connector--light.svg),
+		url(/images/connector--light.svg),
+		url(/images/dashed-horizontal-light.svg);
+	background-repeat: no-repeat, no-repeat, no-repeat, repeat-x;
+	background-position: left bottom, center bottom, right bottom, bottom;
+	background-size: 12px 12px, 12px 12px, 12px 12px, auto;
 }
 
 .article-date {
@@ -212,6 +273,23 @@ const { articles } = useArticlesStore();
 	text-decoration: none;
 }
 
+/* 手机端：单列，隐藏中间竖虚线，只保留左右连接方框 */
+@media (max-width: 600px) {
+	.articles-list {
+		grid-template-columns: 1fr;
+	}
+	.articles-list::before {
+		display: none;
+	}
+	.article-card::after {
+		background-image:
+			url(/images/connector--light.svg),
+			url(/images/connector--light.svg),
+			url(/images/dashed-horizontal-light.svg);
+		background-position: left bottom, right bottom, bottom;
+	}
+}
+
 /* ===== 侧边栏 ===== */
 .sidebar {
 	position: relative;
@@ -222,6 +300,27 @@ const { articles } = useArticlesStore();
 	background-image: url(/images/dashed-horizontal-light.svg);
 	background-repeat: repeat-x;
 	background-position: bottom;
+}
+
+.sidebar::before,
+.sidebar::after {
+	content: "";
+	z-index: var(--z-connector);
+	width: calc(var(--spacing) * 3);
+	height: calc(var(--spacing) * 3);
+	background-image: url(/images/connector--light.svg);
+	background-repeat: no-repeat;
+	background-size: contain;
+	position: absolute;
+	bottom: 0;
+}
+.sidebar::before {
+	left: 0;
+	translate: -50% 50%;
+}
+.sidebar::after {
+	right: 0;
+	translate: 50% 50%;
 }
 
 /* ===== Footer ===== */
