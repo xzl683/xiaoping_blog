@@ -212,25 +212,16 @@ const { articles } = useArticlesStore();
 	grid-column: 1 / -1;
 }
 
-/* 每篇文章底部：通栏横虚线（视口宽度） + 左/中/右三个连接方框 */
+/* 每篇文章底部：仅通栏横虚线（无连接方框） */
 .article-card::after {
 	content: "";
 	position: absolute;
-	bottom: -6px;
-	height: 12px;
+	bottom: 0;
+	height: 1px;
 	z-index: 1;
-	background-image:
-		url(/images/connector--light.svg),
-		url(/images/connector--light.svg),
-		url(/images/connector--light.svg),
-		url(/images/dashed-horizontal-light.svg);
-	background-repeat: no-repeat, no-repeat, no-repeat, repeat-x;
-	background-size: 12px 12px, 12px 12px, 12px 12px, auto;
-	background-position:
-		calc(50vw - 366px) center,
-		calc(50vw - 6px) center,
-		calc(50vw + 354px) center,
-		left center;
+	background-image: url(/images/dashed-horizontal-light.svg);
+	background-repeat: repeat-x;
+	background-position: left center;
 	pointer-events: none;
 }
 
@@ -291,12 +282,15 @@ const { articles } = useArticlesStore();
 	text-decoration: none;
 }
 
-/* ===== 侧边栏 ===== */
+/* ===== 侧边栏（仅底部横虚线，无连接方框） ===== */
 .sidebar {
 	width: 100%;
 	max-width: 760px;
 	padding: 40px 20px;
 	box-sizing: border-box;
+}
+.sidebar.dashed-section::after {
+	display: none;
 }
 
 /* ===== Footer ===== */
@@ -326,11 +320,6 @@ const { articles } = useArticlesStore();
 	.article-card::after {
 		left: -20px;
 		right: -20px;
-		background-image:
-			url(/images/connector--light.svg),
-			url(/images/connector--light.svg),
-			url(/images/dashed-horizontal-light.svg);
-		background-position: 14px center, calc(100% - 26px) center, center;
 	}
 }
 </style>
