@@ -69,6 +69,7 @@ const { articles } = useArticlesStore();
 	height: 60px;
 	padding: 0 20px;
 	box-sizing: border-box;
+	border-bottom: 1px dashed var(--border);
 }
 
 .logo {
@@ -96,6 +97,7 @@ const { articles } = useArticlesStore();
 	padding: 60px 20px 40px;
 	box-sizing: border-box;
 	text-align: left;
+	border-bottom: 1px dashed var(--border);
 }
 
 .blog-title {
@@ -113,16 +115,29 @@ const { articles } = useArticlesStore();
 	line-height: 1.6;
 }
 
-/* ===== 文章列表 ===== */
+/* ===== 文章列表（两列布局） ===== */
 .articles-list {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 48px 32px;
 	width: 100%;
 	max-width: 760px;
-	padding: 20px;
+	padding: 40px 20px;
 	box-sizing: border-box;
+	border-bottom: 1px dashed var(--border);
 }
 
 .article-card {
-	margin-bottom: 56px;
+	flex: 0 0 calc(50% - 16px);
+	margin-bottom: 0;
+	box-sizing: border-box;
+}
+
+/* 手机端：单列 */
+@media (max-width: 600px) {
+	.article-card {
+		flex: 0 0 100%;
+	}
 }
 
 .article-date {
@@ -170,8 +185,9 @@ const { articles } = useArticlesStore();
 .sidebar {
 	width: 100%;
 	max-width: 760px;
-	padding: 20px;
+	padding: 40px 20px;
 	box-sizing: border-box;
+	border-bottom: 1px dashed var(--border);
 }
 
 /* ===== Footer ===== */
