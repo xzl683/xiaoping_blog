@@ -182,17 +182,23 @@ const { articles } = useArticlesStore();
 	box-sizing: border-box;
 }
 
-/* 中间竖向虚线（仅文章列表区域） */
+/* 中间竖向虚线：作为 grid 子项定位，奇数篇时从第 2 行开始（避开首篇整行） */
 .articles-list::before {
 	content: "";
 	position: absolute;
-	left: 50%;
+	grid-column: 1 / -1;
+	grid-row: 1 / -1;
+	justify-self: center;
 	top: 0;
-	bottom: 0;
+	bottom: -6px;
 	width: 1px;
 	background-image: url(/images/dashed-vertical-light.svg);
 	background-repeat: repeat-y;
 	pointer-events: none;
+}
+/* 文章数为奇数时，首篇占整行，中间竖虚线从第 2 行开始到 aside 顶部 */
+.articles-list:has(> .article-card:first-child:nth-last-child(odd))::before {
+	grid-row: 2 / -1;
 }
 
 .article-card {
@@ -221,27 +227,27 @@ const { articles } = useArticlesStore();
 	background-repeat: no-repeat, no-repeat, no-repeat, repeat-x;
 	background-size: 12px 12px, 12px 12px, 12px 12px, auto;
 	background-position:
-		calc(50% - 366px) center,
-		calc(50% - 6px) center,
-		calc(50% + 354px) center,
-		center;
+		calc(50vw - 366px) center,
+		calc(50vw - 6px) center,
+		calc(50vw + 354px) center,
+		left center;
 	pointer-events: none;
 }
 
 /* 左列文章：通栏虚线从视口左端到右端 */
 .article-card:nth-child(odd)::after {
-	left: calc(-(100vw - 760px) / 2 - 20px);
-	right: calc(-(100vw + 760px) / 2 + 364px);
+	left: calc((760px - 100vw) / 2 - 20px);
+	right: calc(364px - (100vw + 760px) / 2);
 }
 /* 右列文章 */
 .article-card:nth-child(even)::after {
-	left: calc(-(100vw - 760px) / 2 - 396px);
-	right: calc(-(100vw + 760px) / 2 + 740px);
+	left: calc((760px - 100vw) / 2 - 396px);
+	right: calc(740px - (100vw + 760px) / 2);
 }
-/* 奇数篇时首篇占整行，虚线通栏 */
+/* 奇数篇时首篇占整行，虚线通栏（保留中间连接方框，竖虚线从此处开始） */
 .article-card:first-child:nth-last-child(odd)::after {
-	left: calc(-(100vw - 760px) / 2 - 20px);
-	right: calc(-(100vw + 760px) / 2 + 740px);
+	left: calc((760px - 100vw) / 2 - 20px);
+	right: calc(740px - (100vw + 760px) / 2);
 }
 
 .article-date {
