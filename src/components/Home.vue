@@ -59,8 +59,9 @@ const { articles } = useArticlesStore();
 	min-height: 100vh;
 }
 
-/* ===== Header ===== */
+/* ===== Header（带虚线 + 左右连接方框） ===== */
 .site-header {
+	position: relative;
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
@@ -69,7 +70,31 @@ const { articles } = useArticlesStore();
 	height: 60px;
 	padding: 0 20px;
 	box-sizing: border-box;
-	border-bottom: 1px dashed var(--border);
+	background-image: url(/images/dashed-horizontal-light.svg);
+	background-repeat: repeat-x;
+	background-position: bottom;
+}
+
+/* 左右两端的连接方框 */
+.site-header::before,
+.site-header::after {
+	content: "";
+	z-index: var(--z-connector);
+	width: calc(var(--spacing) * 3);
+	height: calc(var(--spacing) * 3);
+	background-image: url(/images/connector--light.svg);
+	background-repeat: no-repeat;
+	background-size: contain;
+	position: absolute;
+	bottom: 0;
+}
+.site-header::before {
+	left: 0;
+	translate: -50% 50%;
+}
+.site-header::after {
+	right: 0;
+	translate: 50% 50%;
 }
 
 .logo {
@@ -92,12 +117,15 @@ const { articles } = useArticlesStore();
 
 /* ===== Blog 介绍区（Hero） ===== */
 .blog-intro {
+	position: relative;
 	width: 100%;
 	max-width: 760px;
 	padding: 60px 20px 40px;
 	box-sizing: border-box;
 	text-align: left;
-	border-bottom: 1px dashed var(--border);
+	background-image: url(/images/dashed-horizontal-light.svg);
+	background-repeat: repeat-x;
+	background-position: bottom;
 }
 
 .blog-title {
@@ -117,6 +145,7 @@ const { articles } = useArticlesStore();
 
 /* ===== 文章列表（两列布局） ===== */
 .articles-list {
+	position: relative;
 	display: flex;
 	flex-wrap: wrap;
 	gap: 48px 32px;
@@ -124,7 +153,9 @@ const { articles } = useArticlesStore();
 	max-width: 760px;
 	padding: 40px 20px;
 	box-sizing: border-box;
-	border-bottom: 1px dashed var(--border);
+	background-image: url(/images/dashed-horizontal-light.svg);
+	background-repeat: repeat-x;
+	background-position: bottom;
 }
 
 .article-card {
@@ -183,11 +214,14 @@ const { articles } = useArticlesStore();
 
 /* ===== 侧边栏 ===== */
 .sidebar {
+	position: relative;
 	width: 100%;
 	max-width: 760px;
 	padding: 40px 20px;
 	box-sizing: border-box;
-	border-bottom: 1px dashed var(--border);
+	background-image: url(/images/dashed-horizontal-light.svg);
+	background-repeat: repeat-x;
+	background-position: bottom;
 }
 
 /* ===== Footer ===== */
