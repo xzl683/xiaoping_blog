@@ -1,66 +1,44 @@
 <script setup lang="ts">
 import { useArticlesStore } from '../composables/useArticlesStore';
 
-// import { ref } from 'vue';
-
 const { articles } = useArticlesStore();
 </script>
 
 <template>
 	<div id="home">
 		<header class="site-header">
-			<a href="/">我的博客</a>
+			<a href="/" class="logo">我的博客</a>
 			<nav aria-label="主导航">
-				<div>
-					<a href="/">首页</a>
-					<a href="/archive">归档</a>
-					<a href="/about">关于</a>
-				</div>
+				<a href="/">首页</a>
+				<a href="/archive">归档</a>
+				<a href="/about">关于</a>
 			</nav>
 		</header>
 
-		<main>
-			<article v-for="article in articles">
-				<header>
-					<h2><a :href="'#' + article.getUrl()">{{ article.title }}</a></h2>
-					<time :datetime="article.createTime.toLocaleDateString()">{{ article.createTime.toChineseDateString() }}</time>
-					· 作者:
-					<a rel="author" href="/about">{{ article.author }}</a>
-				</header>
+		<!-- Blog 介绍区（参考 Cloudflare 博客 Hero） -->
+		<section class="blog-intro">
+			<h1 class="blog-title">我的博客</h1>
+			<p class="blog-subtitle">
+				技术深度解析、产品更新，以及来自助力构建更美好互联网的团队的洞察。
+			</p>
+		</section>
 
-				<p>{{ article.summary }}</p>
-
-				<!-- <footer>
-					<p>
-						标签：
-						<a href="/tags/html">HTML</a>
-					</p>
-				</footer> -->
+		<main class="articles-list">
+			<article v-for="article in articles" :key="article.id" class="article-card">
+				<time class="article-date" :datetime="article.createTime.toLocaleDateString()">
+					{{ article.createTime.toChineseDateString() }}
+				</time>
+				<h2 class="article-title">
+					<a :href="'#' + article.getUrl()">{{ article.title }}</a>
+				</h2>
+				<p class="article-summary">{{ article.summary }}</p>
+				<p class="article-author">
+					作者：<a rel="author" href="/about">{{ article.author }}</a>
+				</p>
 			</article>
-			<!-- <h1>最新文章</h1>
-
-			<article>
-				<header>
-					<h2><a href="/posts/hello">Hello World</a></h2>
-					<p>
-						<time datetime="2026-10-16">2026年10月16日</time>
-						· 作者：
-						<a rel="author" href="/about">张三</a>
-					</p>
-				</header>
-
-				<p>这是文章摘要……</p>
-
-				<footer>
-					<p>
-						标签：
-						<a href="/tags/html">HTML</a>
-					</p>
-				</footer>
-			</article> -->
 		</main>
 
-		<aside aria-label="侧边栏">
+		<aside class="sidebar" aria-label="侧边栏">
 			<section>
 				<h2>关于我</h2>
 				<p>前端开发者，喜欢写博客。</p>
@@ -68,7 +46,7 @@ const { articles } = useArticlesStore();
 		</aside>
 
 		<footer class="site-footer">
-			<p><small>&copy; 2026 张三</small></p>
+			<p><small>&copy; 2026 xzl</small></p>
 		</footer>
 	</div>
 </template>
@@ -78,36 +56,131 @@ const { articles } = useArticlesStore();
 	display: flex;
 	flex-direction: column;
 	align-items: center;
+	min-height: 100vh;
 }
 
+/* ===== Header ===== */
 .site-header {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-
 	width: 100%;
+	max-width: 760px;
 	height: 60px;
-
-	> a {
-		margin-left: 30px;
-	}
-
-	> nav {
-		margin-right: 30px;
-		display: flex;
-	}
+	padding: 0 20px;
+	box-sizing: border-box;
 }
 
-main {
-	display: flex;
-	flex-direction: column;
+.logo {
+	font-size: 1.2rem;
+	font-weight: 600;
+	color: var(--text-h);
+	text-decoration: none;
+}
 
+.site-header nav a {
+	margin-left: 24px;
+	color: var(--text);
+	text-decoration: none;
+	font-size: 0.95rem;
+}
+
+.site-header nav a:hover {
+	color: var(--accent);
+}
+
+/* ===== Blog 介绍区（Hero） ===== */
+.blog-intro {
 	width: 100%;
+	max-width: 760px;
+	padding: 60px 20px 40px;
+	box-sizing: border-box;
+	text-align: left;
+}
 
-	> article {
-		margin: 0 30px;
+.blog-title {
+	font-size: 2.5rem;
+	font-weight: 700;
+	color: var(--text-h);
+	margin: 0 0 16px 0;
+	line-height: 1.2;
+}
 
+.blog-subtitle {
+	font-size: 1.1rem;
+	color: var(--text);
+	margin: 0;
+	line-height: 1.6;
+}
 
-	}
+/* ===== 文章列表 ===== */
+.articles-list {
+	width: 100%;
+	max-width: 760px;
+	padding: 20px;
+	box-sizing: border-box;
+}
+
+.article-card {
+	margin-bottom: 56px;
+}
+
+.article-date {
+	display: block;
+	font-size: 0.85rem;
+	color: var(--text);
+	margin-bottom: 8px;
+}
+
+.article-title {
+	font-size: 1.6rem;
+	font-weight: 600;
+	margin: 0 0 12px 0;
+	line-height: 1.3;
+}
+
+.article-title a {
+	color: var(--text-h);
+	text-decoration: none;
+}
+
+.article-title a:hover {
+	color: var(--accent);
+}
+
+.article-summary {
+	font-size: 1rem;
+	color: var(--text);
+	line-height: 1.6;
+	margin: 0 0 12px 0;
+}
+
+.article-author {
+	font-size: 0.9rem;
+	color: var(--text);
+	margin: 0;
+}
+
+.article-author a {
+	color: var(--accent);
+	text-decoration: none;
+}
+
+/* ===== 侧边栏 ===== */
+.sidebar {
+	width: 100%;
+	max-width: 760px;
+	padding: 20px;
+	box-sizing: border-box;
+}
+
+/* ===== Footer ===== */
+.site-footer {
+	width: 100%;
+	max-width: 760px;
+	padding: 40px 20px;
+	box-sizing: border-box;
+	text-align: center;
+	color: var(--text);
 }
 </style>

@@ -20,8 +20,8 @@ export class Time {
 		const date = new Date();
 		return {
 			year   : date.getFullYear(),
-			month  : date.getMonth(),
-			day	: date.getDay(),
+			month  : date.getMonth() + 1,
+			day	: date.getDate(),
 			hours  : date.getHours(),
 			minutes: date.getMinutes(),
 			seconds: date.getSeconds()
