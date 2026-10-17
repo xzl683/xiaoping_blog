@@ -100,8 +100,8 @@ const { articles } = useArticlesStore();
 .dashed-section::after {
 	content: "";
 	position: absolute;
-	left: 0;
-	right: 0;
+	left: 20px;
+	right: 20px;
 	bottom: -6px;
 	height: 12px;
 	background-image:
@@ -180,25 +180,10 @@ const { articles } = useArticlesStore();
 	max-width: 760px;
 	padding: 40px 20px 0;
 	box-sizing: border-box;
-}
-
-/* 中间竖向虚线：作为 grid 子项定位，奇数篇时从第 2 行开始（避开首篇整行） */
-.articles-list::before {
-	content: "";
-	position: absolute;
-	grid-column: 1 / -1;
-	grid-row: 1 / -1;
-	justify-self: center;
-	top: 0;
-	bottom: -6px;
-	width: 1px;
+	/* 中间竖向虚线：作为容器背景，居中纵向重复 */
 	background-image: url(/images/dashed-vertical-light.svg);
+	background-position: center top;
 	background-repeat: repeat-y;
-	pointer-events: none;
-}
-/* 文章数为奇数时，首篇占整行，中间竖虚线从第 2 行开始到 aside 顶部 */
-.articles-list:has(> .article-card:first-child:nth-last-child(odd))::before {
-	grid-row: 2 / -1;
 }
 
 .article-card {
@@ -207,16 +192,17 @@ const { articles } = useArticlesStore();
 	padding-bottom: 48px;
 }
 
-/* 文章数为奇数时，第 1 篇占满一整行 */
+/* 文章数为奇数时，第 1 篇占满一整行，并用背景色遮盖中间竖虚线 */
 .article-card:first-child:nth-last-child(odd) {
 	grid-column: 1 / -1;
+	background: var(--bg);
 }
 
 /* 每篇文章底部：仅通栏横虚线（无连接方框） */
 .article-card::after {
 	content: "";
 	position: absolute;
-	bottom: 0;
+	bottom: -24px;
 	height: 1px;
 	z-index: 1;
 	background-image: url(/images/dashed-horizontal-light.svg);
@@ -313,9 +299,7 @@ const { articles } = useArticlesStore();
 	}
 	.articles-list {
 		grid-template-columns: 1fr;
-	}
-	.articles-list::before {
-		display: none;
+		background-image: none;
 	}
 	.article-card::after {
 		left: -20px;
