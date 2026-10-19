@@ -17,13 +17,13 @@ const article = computed(() => articles.value.find(a => a.id === url.searchParam
 	<main>
 		<article>
 			<header>
+				<time :datetime="article.createTime.toLocaleDateString()">
+					{{ article.createTime.toChineseDateString() }}
+				</time>
 				<h1>{{ article.title }}</h1>
-				<p>
-					<time :datetime="article.createTime.toLocaleDateString()">
-						{{ article.createTime.toChineseDateString() }}
-					</time>
-					<div>作者:<a rel="author" href="/about">{{ article.author }}</a></div>
-				</p>
+				<div class="article-author">
+					作者:<a rel="author" href="/about">{{ article.author }}</a>
+				</div>
 			</header>
 
 			<p>{{ article.content }}</p>
@@ -65,9 +65,58 @@ const article = computed(() => articles.value.find(a => a.id === url.searchParam
 </template>
 
 <style scoped lang="less">
+.article-card {
+	position: relative;
+}
+
+.article-date {
+	display: block;
+	font-size: 0.85rem;
+	color: var(--text);
+	margin-bottom: 8px;
+}
+
+.article-title {
+	font-size: 1.6rem;
+	font-weight: 600;
+	margin: 0 0 12px 0;
+	line-height: 1.3;
+}
+
+.article-title span {
+	color: var(--text-h);
+	cursor: pointer;
+}
+
+.article-title span:hover {
+	color: var(--accent);
+}
+
+.article-summary {
+	font-size: 1rem;
+	color: var(--text);
+	line-height: 1.6;
+	margin: 0 0 12px 0;
+}
+
+.article-author {
+	font-size: 0.9rem;
+	color: var(--text);
+	margin: 0;
+}
+
+.article-author a {
+	color: var(--accent);
+	text-decoration: none;
+}
+
 main {
+	display: flex;
+	justify-content: center;
 	width: 100vw;
 
-	article {}
+	article {
+		max-width: 1200px;
+	}
 }
 </style>

@@ -45,7 +45,15 @@ const articleData: IArticle[] = [
 		author: 'xzl',
 		tag: 'code',
 		createTime: new Time()
-	}
+	},
+	// {
+	// 	id: '6',
+	// 	title: 'hello world',
+	// 	content: '6 blog',
+	// 	author: 'xzl',
+	// 	tag: 'code',
+	// 	createTime: new Time()
+	// }
 ];
 
 export const articles = articleData.map(a => new Article(a));

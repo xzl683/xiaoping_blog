@@ -1,20 +1,25 @@
 <script setup lang="ts">
-import { RouterLink } from 'vue-router';
+const emit = defineEmits<{
+	'search': []
+}>();
 
 </script>
 
 <template>
-    <header class="site-header dashed-btm">
-        <RouterLink to="/" class="logo">我的博客</RouterLink>
-        <nav aria-label="主导航">
-            <a href="/">首页</a>
-            <a href="/archive">归档</a>
-            <a href="/about">关于</a>
-        </nav>
-    </header>
+	<header class="site-header dashed-btm">
+		<RouterLink to="/" class="logo">我的博客</RouterLink>
+		<button id="search-button" @click="emit('search')">
+			<img src="/src/assets/images/search-button.svg" alt="search" />
+		</button>
+		<nav aria-label="主导航">
+			<a href="/">首页</a>
+			<a href="/archive">归档</a>
+			<a href="/about">关于</a>
+		</nav>
+	</header>
 </template>
 
-<style scoped>
+<style scoped lang="less">
 /* ===== Header ===== */
 .site-header {
 	position: relative;
@@ -27,7 +32,7 @@ import { RouterLink } from 'vue-router';
 
 	width: 100%;
 	height: 60px;
-	
+
 	/* border-bottom: 1px #5f5f5f solid; */
 }
 
@@ -49,4 +54,17 @@ import { RouterLink } from 'vue-router';
 	color: var(--accent);
 }
 
+#search-button {
+	width: 30px;
+	height: 30px;
+	background-color: transparent;
+	border: none;
+	border-radius: 50%;
+	transition: all 300ms;
+	cursor: pointer;
+
+	&:hover {
+		background-color: #f6f6f7;
+	}
+}
 </style>

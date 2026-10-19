@@ -1,34 +1,31 @@
 <script setup lang="ts">
 import Nav from '@/components/Nav.vue';
-import ArticleComponent from '../components/Article.vue';
+import ArticleCard from '@/components/ArticleCard.vue';
 
 import { useArticlesStore } from '@/composables/useArticlesStore';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { isOdd } from '@/utils/math.ts';
+import Search from '@/components/Search.vue';
 
 const { articles } = useArticlesStore();
 
 function chunkPairs<T>(arr: T[]) {
 	const result: T[][] = [];
-	const odd = isOdd(arr.length);
-	const start = odd ? 1 : 0;
-
-	// 奇数时，第一个元素单独一组
-	if (odd) result.push([arr[0]]);
-
-	// 剩余元素每两个一组
-	for (let i = start; i < arr.length; i += 2)
+	if(isOdd(arr.length)) result.push([arr[0]]);
+	for(let i = result.length; i < arr.length; i += 2)
 		result.push(arr.slice(i, i + 2));
-
 	return result;
 }
 
 const pairArts = computed(() => chunkPairs(articles.value));
+
+const openSearch = ref(false);
 </script>
 
 <template>
 	<div id="home">
-		<Nav class="full-horizon" />
+		<Nav class="full-horizon" @search="openSearch = true" />
+		<Search v-if="openSearch" />
 
 		<!-- Blog 介绍区（参考 Cloudflare 博客 Hero） -->
 		<div class="full-horizon dashed-btm">
@@ -43,7 +40,7 @@ const pairArts = computed(() => chunkPairs(articles.value));
 		<main class="articles-list">
 			<div class="dashed-btm" v-for="i in Math.ceil(articles.length / 2)" :key="i">
 				<div class="line">
-					<ArticleComponent
+					<ArticleCard
 						v-for="art in pairArts[i - 1]"
 						:article="art"
 						:key="art.id"
@@ -54,7 +51,7 @@ const pairArts = computed(() => chunkPairs(articles.value));
 		</main>
 
 		<div class="full-horizon dashed-btm">
-			<aside class="sidebar dashed-section dashed-btm" aria-label="侧边栏">
+			<aside class="sidebar dashed-section" aria-label="侧边栏">
 				<section>
 					<h2>关于我</h2>
 					<p>前端开发者，喜欢写博客。</p>
@@ -69,40 +66,6 @@ const pairArts = computed(() => chunkPairs(articles.value));
 </template>
 
 <style>
-/* ===== 通用：区块底部通栏横虚线（视口宽度） ===== */
-/* .dashed-section {
-	position: relative;
-} */
-/* ::before 绘制通栏横虚线，::after 绘制左右连接方框 */
-/* .dashed-section::before {
-	content: "";
-	position: absolute;
-	left: calc(50% - 50vw);
-	right: calc(50% - 50vw);
-	bottom: 0;
-	height: 1px;
-	background-image: url(../assets/images/dashed-horizontal-light.svg);
-	background-repeat: repeat-x;
-	background-position: bottom;
-	pointer-events: none;
-}
-.dashed-section::after {
-	content: "";
-	position: absolute;
-	left: 20px;
-	right: 20px;
-	bottom: -6px;
-	height: 12px;
-	background-image:
-		url(../assets/images/connector--light.svg),
-		url(../assets/images/connector--light.svg);
-	background-repeat: no-repeat, no-repeat;
-	background-position: -6px 0, calc(100% + 6px) 0;
-	background-size: 12px 12px, 12px 12px;
-	z-index: var(--z-connector);
-	pointer-events: none;
-} */
-
 :root {
 	--spacing-page: 800px;
 }
@@ -112,12 +75,6 @@ const pairArts = computed(() => chunkPairs(articles.value));
 	background-image: url(/src/assets/images/dashed-horizontal-light.svg);
 	background-repeat: repeat-x;
 }
-
-/* .dashed-right-side {
-	background-position: 100% 0;
-	background-image: url(/src/assets/images/dashed-vertical-light.svg);
-	background-repeat: repeat-y;
-} */
 
 .full-horizon {
 	display: flex;
@@ -133,6 +90,7 @@ const pairArts = computed(() => chunkPairs(articles.value));
 	flex-direction: column;
 	align-items: center;
 	min-height: 100vh;
+	overflow-x: hidden;
 }
 
 /* ===== 两侧竖向虚线（从 header 底部延伸到页面底部） ===== */
@@ -158,6 +116,7 @@ const pairArts = computed(() => chunkPairs(articles.value));
 
 /* ===== Blog 介绍区（Hero） ===== */
 .blog-intro {
+	position: relative;
 	display: flex;
 	flex-direction: column;
 	gap: 20px;
@@ -166,6 +125,29 @@ const pairArts = computed(() => chunkPairs(articles.value));
 	max-width: var(--spacing-page);
 	padding: 30px;
 	text-align: left;
+}
+
+.blog-intro::before,
+.blog-intro::after {
+	content: "";
+    position: absolute;
+    bottom: 0;
+
+	width: 12px;
+	height: 12px;
+
+	background-image: url(/src/assets/images/connector--light.svg);
+	background-repeat: no-repeat;
+    background-size: contain;
+	z-index: 1;
+}
+.blog-intro::before {
+	left: 0;
+    translate: -50% 50%;
+}
+.blog-intro::after {
+	right: 0;
+    translate: 50% 50%;
 }
 
 .blog-title {
