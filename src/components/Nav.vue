@@ -4,7 +4,7 @@ import { RouterLink } from 'vue-router';
 </script>
 
 <template>
-    <header class="site-header dashed-section">
+    <header class="site-header dashed-btm">
         <RouterLink to="/" class="logo">我的博客</RouterLink>
         <nav aria-label="主导航">
             <a href="/">首页</a>
@@ -18,14 +18,17 @@ import { RouterLink } from 'vue-router';
 /* ===== Header ===== */
 .site-header {
 	position: relative;
+
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	width: 100%;
-	max-width: 760px;
-	height: 60px;
+
 	padding: 0 20px;
-	box-sizing: border-box;
+
+	width: 100%;
+	height: 60px;
+	
+	/* border-bottom: 1px #5f5f5f solid; */
 }
 
 .logo {

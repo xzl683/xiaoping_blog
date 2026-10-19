@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import Nav from '@/components/Nav.vue';
-import ArticleComponent from './Article.vue';
+import ArticleComponent from '../components/Article.vue';
 
 import { useArticlesStore } from '@/composables/useArticlesStore';
 import { computed } from 'vue';
-import { isEven, isOdd } from '@/utils/math.ts';
+import { isOdd } from '@/utils/math.ts';
 
 const { articles } = useArticlesStore();
 
@@ -14,8 +14,7 @@ function chunkPairs<T>(arr: T[]) {
 	const start = odd ? 1 : 0;
 
 	// 奇数时，第一个元素单独一组
-	if (odd)
-		result.push([arr[0]]);
+	if (odd) result.push([arr[0]]);
 
 	// 剩余元素每两个一组
 	for (let i = start; i < arr.length; i += 2)
@@ -29,33 +28,39 @@ const pairArts = computed(() => chunkPairs(articles.value));
 
 <template>
 	<div id="home">
-		<Nav />
+		<Nav class="full-horizon" />
 
 		<!-- Blog 介绍区（参考 Cloudflare 博客 Hero） -->
-		<section class="blog-intro dashed-section dashed-btm">
-			<h1 class="blog-title">我的博客</h1>
-			<p class="blog-subtitle">
-				技术深度解析、产品更新，以及来自助力构建更美好互联网的团队的洞察。
-			</p>
-		</section>
+		<div class="full-horizon dashed-btm">
+			<section class="blog-intro dashed-section">
+				<h1 class="blog-title">我的博客</h1>
+				<p class="blog-subtitle">
+					技术深度解析、产品更新，以及来自助力构建更美好互联网的团队的洞察。
+				</p>
+			</section>
+		</div>
 
 		<main class="articles-list">
-			<div class="line dashed-btm" v-for="i in Math.ceil(articles.length / 2)" :key="i">
-				<ArticleComponent
-					v-for="j in pairArts[i - 1].length"
-					:article="pairArts[i - 1][j - 1]"
-					:key="pairArts[i - 1][j - 1].id"
-					:class="{ dashedRightSide: j == 0 && pairArts[i - 1].length != 1 }"
-				/>
+			<div class="dashed-btm" v-for="i in Math.ceil(articles.length / 2)" :key="i">
+				<div class="line">
+					<ArticleComponent
+						v-for="art in pairArts[i - 1]"
+						:article="art"
+						:key="art.id"
+						:class="{ 'whole-line': i == 1 && isOdd(articles.length) }"
+					/>
+				</div>
 			</div>
 		</main>
 
-		<aside class="sidebar dashed-section dashed-btm" aria-label="侧边栏">
-			<section>
-				<h2>关于我</h2>
-				<p>前端开发者，喜欢写博客。</p>
-			</section>
-		</aside>
+		<div class="full-horizon dashed-btm">
+			<aside class="sidebar dashed-section dashed-btm" aria-label="侧边栏">
+				<section>
+					<h2>关于我</h2>
+					<p>前端开发者，喜欢写博客。</p>
+				</section>
+			</aside>
+		</div>
 
 		<footer class="site-footer">
 			<p><small>&copy; 2026 xzl</small></p>
@@ -98,20 +103,30 @@ const pairArts = computed(() => chunkPairs(articles.value));
 	pointer-events: none;
 } */
 
+:root {
+	--spacing-page: 800px;
+}
+
 .dashed-btm {
 	background-position: 0 100%;
 	background-image: url(/src/assets/images/dashed-horizontal-light.svg);
 	background-repeat: repeat-x;
 }
 
-.dashed-right-side {
+/* .dashed-right-side {
 	background-position: 100% 0;
 	background-image: url(/src/assets/images/dashed-vertical-light.svg);
 	background-repeat: repeat-y;
+} */
+
+.full-horizon {
+	display: flex;
+	justify-content: center;
+	width: 100vw;
 }
 </style>
 
-<style scoped>
+<style scoped lang="less">
 #home {
 	position: relative;
 	display: flex;
@@ -134,10 +149,10 @@ const pairArts = computed(() => chunkPairs(articles.value));
 	pointer-events: none;
 }
 #home::before {
-	left: calc(50% - 380px);
+	left: calc(50% - var(--spacing-page) / 2);
 }
 #home::after {
-	right: calc(50% - 380px);
+	right: calc(50% - var(--spacing-page) / 2);
 }
 
 
@@ -148,7 +163,7 @@ const pairArts = computed(() => chunkPairs(articles.value));
 	gap: 20px;
 
 	width: 100%;
-	max-width: 760px;
+	max-width: var(--spacing-page);
 	padding: 30px;
 	text-align: left;
 }
@@ -168,27 +183,27 @@ const pairArts = computed(() => chunkPairs(articles.value));
 
 /* ===== 文章列表（两列网格） ===== */
 .articles-list {
-	position: relative;
+	// position: relative;
 	
-	display: flex;
-	flex-direction: column;
-	
-	width: 100%;
-	max-width: 760px;
+	width: 100vw;
 
-	/* 中间竖向虚线：作为容器背景，居中纵向重复 */
-	/* background-image: url(../assets/images/dashed-vertical-light.svg);
-	background-position: center top;
-	background-repeat: repeat-y; */
+	> .dashed-btm {
+		display: flex;
+		justify-content: center;
+		height: 382px;
+	}
 
-	> .line {
+	.line {
 		display: flex;
 		flex-direction: row;
+		justify-content: center;
 
-		> article {
+		height: 100%;
+		width: var(--spacing-page);
+
+		article {
 			flex: 1;
 			min-width: 0;
-			min-height: 300px;
 
 			display: flex;
 			flex-direction: column;
@@ -197,13 +212,19 @@ const pairArts = computed(() => chunkPairs(articles.value));
 
 			padding: 30px;
 		}
+
+		article:not(.whole-line):first-child {
+			background-position: 100% 0;
+			background-image: url(/src/assets/images/dashed-vertical-light.svg);
+			background-repeat: repeat-y;
+		}
 	}
 }
 
 /* ===== 侧边栏（仅底部横虚线，无连接方框） ===== */
 .sidebar {
 	width: 100%;
-	max-width: 760px;
+	max-width: var(--spacing-page);
 	padding: 40px 20px;
 }
 .sidebar.dashed-section::after {
@@ -213,14 +234,14 @@ const pairArts = computed(() => chunkPairs(articles.value));
 /* ===== Footer ===== */
 .site-footer {
 	width: 100%;
-	max-width: 760px;
+	max-width: var(--spacing-page);
 	padding: 40px 20px;
 	text-align: center;
 	color: var(--text);
 }
 
 /* ===== 手机端适配 ===== */
-@media (max-width: 760px) {
+@media (max-width: var(--spacing-page)) {
 	#home::before {
 		left: 20px;
 	}

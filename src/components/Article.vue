@@ -36,35 +36,6 @@ const { article } = defineProps<{
 	position: relative;
 }
 
-
-/* .article-card:first-child:nth-last-child(odd) {
-	grid-column: 1 / -1;
-	background: var(--bg);
-}
-.article-card::after {
-	content: "";
-	position: absolute;
-	bottom: -24px;
-	height: 1px;
-	z-index: 1;
-	background-image: url(/images/dashed-horizontal-light.svg);
-	background-repeat: repeat-x;
-	background-position: left center;
-	pointer-events: none;
-}
-.article-card:nth-child(odd)::after {
-	left: calc((760px - 100vw) / 2 - 20px);
-	right: calc(364px - (100vw + 760px) / 2);
-}
-.article-card:nth-child(even)::after {
-	left: calc((760px - 100vw) / 2 - 396px);
-	right: calc(740px - (100vw + 760px) / 2);
-}
-.article-card:first-child:nth-last-child(odd)::after {
-	left: calc((760px - 100vw) / 2 - 20px);
-	right: calc(740px - (100vw + 760px) / 2);
-} */
-
 .article-date {
 	display: block;
 	font-size: 0.85rem;
