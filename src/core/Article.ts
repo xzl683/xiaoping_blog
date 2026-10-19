@@ -1,7 +1,7 @@
-import type { IArticle } from "../types";
-import type { Time } from "../utils/Time";
+import type { IArticle } from "@/types";
+import type { Time } from "@/utils/Time";
 
-const summaryLength = 30; // char
+const maxSummaryLength = 100; // char
 
 export default class Article implements IArticle {
 	id: string;
@@ -12,20 +12,24 @@ export default class Article implements IArticle {
 	tag: string;
 	createTime: Time;
 
+	static getSummary(article: Article) {
+		const { content } = article;
+		if(content.length <= maxSummaryLength) return content;
+		let endIndex = content.indexOf('。');
+		if(endIndex > maxSummaryLength) endIndex = content.indexOf('，');
+		if(endIndex == -1) endIndex = maxSummaryLength;
+		return article.content.slice(0, Math.min(endIndex + 1, maxSummaryLength));
+	}
+
 	constructor(data: IArticle) {
 		this.id = data.id;
 		this.title = data.title;
 		this.content = data.content;
-		this.summary = data.summary || this.getSummary();
+		this.summary = data.summary || Article.getSummary(this);
 		this.author = data.author;
 		this.tag = data.tag;
 		this.createTime = data.createTime;
 	}
-
-	private getSummary() {
-		return this.content.slice(0, summaryLength);
-	}
-
 	public getUrl() {
 		return this.id;
 	}
