@@ -6,6 +6,7 @@ import { useArticlesStore } from '@/composables/useArticlesStore';
 import { computed, ref } from 'vue';
 import { isOdd } from '@/utils/math.ts';
 import Search from '@/components/Search.vue';
+import TestModal from '@/components/TestModal.vue';
 
 const { articles } = useArticlesStore();
 
@@ -25,7 +26,8 @@ const openSearch = ref(false);
 <template>
 	<div id="home">
 		<Nav class="full-horizon" @search="openSearch = true" />
-		<Search v-if="openSearch" />
+		<TestModal />
+		<!-- <Search v-if="openSearch" /> -->
 
 		<!-- Blog 介绍区（参考 Cloudflare 博客 Hero） -->
 		<div class="full-horizon dashed-btm">
