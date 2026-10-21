@@ -25,9 +25,9 @@ const openSearch = ref(false);
 
 <template>
 	<div id="home">
-		<Nav class="full-horizon" @search="openSearch = true" />
-		<TestModal />
-		<!-- <Search v-if="openSearch" /> -->
+		<Nav class="full-horizon" @open-search="openSearch = true" />
+		<!-- <TestModal /> -->
+		<Search v-model:open="openSearch" />
 
 		<!-- Blog 介绍区（参考 Cloudflare 博客 Hero） -->
 		<div class="full-horizon dashed-btm">

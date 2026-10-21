@@ -1,6 +1,6 @@
 <script setup lang="ts">
 const emit = defineEmits<{
-	'search': []
+	'openSearch': []
 }>();
 
 </script>
@@ -8,7 +8,7 @@ const emit = defineEmits<{
 <template>
 	<header class="site-header dashed-btm">
 		<RouterLink to="/" class="logo">我的博客</RouterLink>
-		<button id="search-button" @click="emit('search')">
+		<button id="search-button" @click="emit('openSearch')">
 			<img src="/src/assets/images/search-button.svg" alt="search" />
 		</button>
 		<nav aria-label="主导航">

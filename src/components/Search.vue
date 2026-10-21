@@ -1,19 +1,26 @@
 <script setup lang="ts">
+import BaseModal from '@/components/BaseModal.vue';
 import { useArticlesStore } from '@/composables/useArticlesStore';
-import type { InputHTMLAttributes } from 'vue';
+import Article from '@/core/Article';
+import { computed, ref, type InputHTMLAttributes } from 'vue';
+
+const open = defineModel<boolean>('open', { default: false });
 
 const { articles } = useArticlesStore();
+
+const resultArt = ref<Article[]>([]);
 
 function handleInput(text: string) {
 	console.log(text);
 
 	const result = articles.value.filter(art => art.title.includes(text));
+	resultArt.value = result;
 	console.log(result);
 }
 </script>
 
 <template>
-	<div id="search">
+	<BaseModal v-model:open="open">
 		<div class="card">
 			<header>
 				<img src="/src/assets/images/search-button.svg" alt="">
@@ -23,8 +30,22 @@ function handleInput(text: string) {
 					@input="e => handleInput((e.target as InputHTMLAttributes).value)"
 				/>
 			</header>
+			<div class="result">
+				<p v-if="resultArt.length == 0">未找到相关文章</p>
+				<article v-else v-for="article in resultArt">
+					<span class="title">{{ article.title }}</span>
+					<span class="author">{{ article.author }}</span>
+					<time :datetime="article.createTime.toLocaleDateString()">
+						{{ article.createTime.toChineseDateString() }}
+					</time>
+					<p>{{ article.summary }}</p>
+				</article>
+			</div>
 		</div>
-	</div>
+	</BaseModal>
+	<!-- <div id="search">
+		
+	</div> -->
 </template>
 
 <style scoped lang="less">
@@ -46,7 +67,9 @@ function handleInput(text: string) {
 }
 
 .card {
-	width: 70%;
+	position: static;
+
+	width: 70vw;
 	height: 400px;
 
 	background-color: #fff;
@@ -59,8 +82,8 @@ function handleInput(text: string) {
 		border-bottom: 1px #dddddd solid;
 
 		> img {
-			width: 30px;
-			height: 30px;
+			width: 25px;
+			height: 25px;
 			flex-shrink: 0;
 		}
 		> input {
@@ -68,6 +91,12 @@ function handleInput(text: string) {
 			border: none;
 			outline: none;
 		}
+	}
+}
+
+.result {
+	> article {
+
 	}
 }
 </style>
