@@ -24,7 +24,7 @@ const openSearch = ref(false);
 </script>
 
 <template>
-	<div id="home">
+	<div id="home" :class="{ 'open-search': openSearch }">
 		<Nav class="full-horizon" @open-search="openSearch = true" />
 		<!-- <TestModal /> -->
 		<Search v-model:open="openSearch" />
@@ -93,6 +93,10 @@ const openSearch = ref(false);
 	align-items: center;
 	min-height: 100vh;
 	overflow-x: hidden;
+}
+
+#home.open-search {
+	overflow: hidden;
 }
 
 /* ===== 两侧竖向虚线（从 header 底部延伸到页面底部） ===== */

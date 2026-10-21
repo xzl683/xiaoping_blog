@@ -56,8 +56,13 @@
 	box-sizing: border-box;
 }
 
-body {
+html {
 	margin: 0;
+	scrollbar-gutter: stable;
+}
+
+html:has(dialog[open]) {
+	overflow: hidden;
 }
 
 h1, h2 {
@@ -65,3 +70,4 @@ h1, h2 {
 	font-weight: 500;
 	color: var(--text-h);
 }
+

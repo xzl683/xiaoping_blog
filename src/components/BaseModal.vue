@@ -108,6 +108,7 @@ function onDialogClick(e: MouseEvent) {
 
 .base-modal::backdrop {
 	background: rgb(0 0 0 / 0.5);
+	backdrop-filter: blur(3px);
 }
 
 .modal-inner {
