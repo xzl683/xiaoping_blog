@@ -2,9 +2,12 @@
 import BaseModal from '@/components/BaseModal.vue';
 import { useArticlesStore } from '@/composables/useArticlesStore';
 import Article from '@/core/Article';
-import { computed, ref, type InputHTMLAttributes } from 'vue';
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
 
 const open = defineModel<boolean>('open', { default: false });
+
+const router = useRouter();
 
 const { articles } = useArticlesStore();
 
@@ -32,7 +35,11 @@ function handleInput() {
 			</header>
 			<div class="result">
 				<div v-if="resultArt.length == 0">{{ keyword ? '未找到相关文章' : '开始输入以进行搜索' }}</div>
-				<article v-else v-for="article in resultArt" @click="console.log(article.id)">
+				<article
+					v-else
+					v-for="article in resultArt"
+					@click="router.push({ name: 'article', params: { slug: article.id } })
+				">
 					<header>
 						<span class="title">{{ article.title }}</span>
 						<span class="author">{{ article.author }}</span>

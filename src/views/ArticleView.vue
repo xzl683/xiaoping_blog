@@ -1,32 +1,57 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { ref, watch } from 'vue';
 import Nav from '@/components/Nav.vue';
-import { useArticlesStore } from '@/composables/useArticlesStore.ts';
-// import Article from '../components/Article.vue';
+import type Article from '@/core/Article';
+import { fetchArticle } from '@/api';
 
-const { articles } = useArticlesStore();
+const props = defineProps<{ slug: string }>();
 
-const url = new URL(window.location.href);
+const article = ref<Article | null>(null);
+const loading = ref(false);
+const error = ref<string | null>(null);
 
-const article = computed(() => articles.value.find(a => a.id === url.searchParams.get('id'))!);
+function loadArticle(slug: string) {
+	loading.value = true;
+	error.value = null;
+	try {
+		// 实际项目：fetch(`/api/posts/${slug}`) 或查 markdown
+		article.value = fetchArticle(slug);
+		document.title = article.value?.title ?? '文章不存在';
+	} catch (e) {
+		error.value = '文章加载失败';
+	} finally {
+		loading.value = false;
+	}
+}
+
+// 关键：watch 而不是 onMounted
+// 从 /posts/a 跳到 /posts/b 时组件被复用，onMounted 不会再触发
+watch(
+	() => props.slug,
+	slug => loadArticle(slug),
+	{ immediate: true },
+);
 </script>
 
 <template>
 	<Nav />
 
 	<main>
-		<article>
+		<p v-if="loading">加载中…</p>
+		<p v-else-if="error">{{ error }}</p>
+
+		<article v-else>
 			<header>
-				<time :datetime="article.createTime.toLocaleDateString()">
-					{{ article.createTime.toChineseDateString() }}
+				<time :datetime="article!.createTime.toLocaleDateString()">
+					{{ article!.createTime.toChineseDateString() }}
 				</time>
-				<h1>{{ article.title }}</h1>
+				<h1>{{ article!.title }}</h1>
 				<div class="article-author">
-					作者:<a rel="author" href="/about">{{ article.author }}</a>
+					作者:<a rel="author" href="/about">{{ article!.author }}</a>
 				</div>
 			</header>
 
-			<p>{{ article.content }}</p>
+			<p>{{ article!.content }}</p>
 
 			<!-- <section>
 				<h2>小标题</h2>

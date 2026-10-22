@@ -1,8 +1,5 @@
 <script setup lang="ts">
-import { useRouter } from 'vue-router';
-
 import type Article from '@/core/Article';
-const router = useRouter();
 
 const { article } = defineProps<{
 	article: Article
@@ -15,13 +12,9 @@ const { article } = defineProps<{
 			{{ article.createTime.toChineseDateString() }}
 		</time>
 		<h2 class="article-title">
-			<!-- <a :href="'#' + article.getUrl()">{{ article.title }}</a> -->
-			<span @click="router.push({
-				path: '/article',
-				query: {
-					id: article.id
-				}
-			})">{{ article.title }}</span>
+			<RouterLink :to="{ name: 'article', params: { slug: article.id } }">
+				{{ article.title }}
+			</RouterLink>
 		</h2>
 		<p class="article-summary">{{ article.summary }}</p>
 		<p class="article-author">
@@ -50,12 +43,13 @@ const { article } = defineProps<{
 	line-height: 1.3;
 }
 
-.article-title span {
+.article-title a {
 	color: var(--text-h);
+	text-decoration: none;
 	cursor: pointer;
 }
 
-.article-title span:hover {
+.article-title a:hover {
 	color: var(--accent);
 }
 
