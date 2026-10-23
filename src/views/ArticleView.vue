@@ -40,7 +40,7 @@ watch(
 		<p v-if="loading">加载中…</p>
 		<p v-else-if="error">{{ error }}</p>
 
-		<article v-else>
+		<article class="article-detail" v-else>
 			<header>
 				<time :datetime="article!.createTime.toLocaleDateString()">
 					{{ article!.createTime.toChineseDateString() }}
@@ -57,39 +57,7 @@ watch(
 </template>
 
 <style scoped lang="less">
-.article-card {
-	position: relative;
-}
-
-.article-date {
-	display: block;
-	font-size: 0.85rem;
-	color: var(--text);
-	margin-bottom: 8px;
-}
-
-.article-title {
-	font-size: 1.6rem;
-	font-weight: 600;
-	margin: 0 0 12px 0;
-	line-height: 1.3;
-}
-
-.article-title span {
-	color: var(--text-h);
-	cursor: pointer;
-}
-
-.article-title span:hover {
-	color: var(--accent);
-}
-
-.article-summary {
-	font-size: 1rem;
-	color: var(--text);
-	line-height: 1.6;
-	margin: 0 0 12px 0;
-}
+@content-max-width: 800px;
 
 .article-author {
 	font-size: 0.9rem;
@@ -105,17 +73,43 @@ watch(
 main {
 	display: flex;
 	justify-content: center;
-	> article {
-		> header {
-			time {
-				font-size: 0.75rem;
-			}
+	padding: 40px 0;
+}
+
+.article-detail {
+	position: relative;
+	width: calc(100% - 40px);
+	max-width: var(--content-max-width);
+	padding: var(--content-padding);
+
+	> header {
+		time {
+			font-size: 0.75rem;
 		}
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		width: 90%;
 	}
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+}
+
+.article-detail::before,
+.article-detail::after {
+	content: "";
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	width: 1px;
+	background-image: var(--dashed-v);
+	background-repeat: repeat-y;
+	pointer-events: none;
+}
+
+.article-detail::before {
+	left: 0;
+}
+
+.article-detail::after {
+	right: 0;
 }
 
 pre {
@@ -124,24 +118,9 @@ pre {
 	overflow-x: auto;
 }
 
-article {
-	background-image: url(/src/assets/images/dashed-vertical-light.svg);
-	background-repeat: repeat-y;
+@media (max-width: @content-max-width) {
+	.article-detail {
+		padding: 20px;
+	}
 }
-
-// article::before,
-// article::after {
-// 	content: "";
-// 	position: absolute;
-// 	top: 60px;
-// 	bottom: 0;
-// 	width: 1px;
-// 	background-image: url(../assets/images/dashed-vertical-light.svg);
-// 	background-repeat: repeat-y;
-// 	z-index: 0;
-// 	pointer-events: none;
-// }
-// article::after {
-// 	right: 100%;
-// }
 </style>

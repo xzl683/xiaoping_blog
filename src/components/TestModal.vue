@@ -5,7 +5,6 @@ import BaseModal from './BaseModal.vue'
 const confirmOpen = ref(false)
 const searchOpen = ref(false)
 
-const keyword = ref('')
 const searchInput = ref<HTMLInputElement | null>(null)
 
 function confirmDelete() {
@@ -17,11 +16,6 @@ function confirmDelete() {
 async function onSearchOpened() {
 	await nextTick()
 	searchInput.value?.focus()
-}
-
-function onSearch() {
-	console.log('搜索：', keyword.value)
-	searchOpen.value = false
 }
 </script>
 

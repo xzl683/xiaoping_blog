@@ -63,25 +63,9 @@ const pairArts = computed(() => chunkPairs(articles.value));
 	</div>
 </template>
 
-<style>
-:root {
-	--spacing-page: 800px;
-}
-
-.dashed-btm {
-	background-position: 0 100%;
-	background-image: url(/src/assets/images/dashed-horizontal-light.svg);
-	background-repeat: repeat-x;
-}
-
-.full-horizon {
-	display: flex;
-	justify-content: center;
-	width: 100vw;
-}
-</style>
-
 <style scoped lang="less">
+@content-max-width: 800px;
+
 #home {
 	position: relative;
 	display: flex;
@@ -96,19 +80,19 @@ const pairArts = computed(() => chunkPairs(articles.value));
 #home::after {
 	content: "";
 	position: absolute;
-	top: 60px;
+	top: var(--header-height);
 	bottom: 0;
 	width: 1px;
-	background-image: url(../assets/images/dashed-vertical-light.svg);
+	background-image: var(--dashed-v);
 	background-repeat: repeat-y;
 	z-index: 0;
 	pointer-events: none;
 }
 #home::before {
-	left: calc(50% - var(--spacing-page) / 2);
+	left: calc(50% - var(--content-max-width) / 2);
 }
 #home::after {
-	right: calc(50% - var(--spacing-page) / 2);
+	right: calc(50% - var(--content-max-width) / 2);
 }
 
 
@@ -120,8 +104,8 @@ const pairArts = computed(() => chunkPairs(articles.value));
 	gap: 20px;
 
 	width: 100%;
-	max-width: var(--spacing-page);
-	padding: 30px;
+	max-width: var(--content-max-width);
+	padding: var(--content-padding);
 	text-align: left;
 }
 
@@ -134,7 +118,7 @@ const pairArts = computed(() => chunkPairs(articles.value));
 	width: 12px;
 	height: 12px;
 
-	background-image: url(/src/assets/images/connector--light.svg);
+	background-image: var(--connector);
 	background-repeat: no-repeat;
     background-size: contain;
 	z-index: 1;
@@ -170,7 +154,7 @@ const pairArts = computed(() => chunkPairs(articles.value));
 	> .dashed-btm {
 		display: flex;
 		justify-content: center;
-		height: 382px;
+		min-height: 382px;
 	}
 
 	.line {
@@ -178,8 +162,11 @@ const pairArts = computed(() => chunkPairs(articles.value));
 		flex-direction: row;
 		justify-content: center;
 
-		height: 100%;
-		width: var(--spacing-page);
+		width: var(--content-max-width);
+
+		background-image: var(--dashed-v);
+		background-position: center top;
+		background-repeat: repeat-y;
 
 		article {
 			flex: 1;
@@ -190,51 +177,61 @@ const pairArts = computed(() => chunkPairs(articles.value));
 			justify-content: center;
 			gap: 10px;
 
-			padding: 30px;
+			padding: var(--content-padding);
 		}
+	}
 
-		article:not(.whole-line):first-child {
-			background-position: 100% 0;
-			background-image: url(/src/assets/images/dashed-vertical-light.svg);
-			background-repeat: repeat-y;
-		}
+	.dashed-btm:has(.whole-line) .line {
+		background-image: none;
 	}
 }
 
-/* ===== 侧边栏（仅底部横虚线，无连接方框） ===== */
+/* ===== 侧边栏 ===== */
 .sidebar {
 	width: 100%;
-	max-width: var(--spacing-page);
-	padding: 40px 20px;
-}
-.sidebar.dashed-section::after {
-	display: none;
+	max-width: var(--content-max-width);
+	padding: 40px var(--content-padding);
 }
 
 /* ===== Footer ===== */
 .site-footer {
 	width: 100%;
-	max-width: var(--spacing-page);
-	padding: 40px 20px;
+	max-width: var(--content-max-width);
+	padding: 40px var(--content-padding);
 	text-align: center;
 	color: var(--text);
 }
 
 /* ===== 手机端适配 ===== */
-@media (max-width: var(--spacing-page)) {
+@media (max-width: @content-max-width) {
 	#home::before {
 		left: 20px;
 	}
 	#home::after {
 		right: 20px;
 	}
-	.articles-list {
-		grid-template-columns: 1fr;
-		background-image: none;
+
+	.blog-intro,
+	.sidebar,
+	.site-footer {
+		padding-left: 20px;
+		padding-right: 20px;
 	}
-	.article-card::after {
-		left: -20px;
-		right: -20px;
+
+	.articles-list > .dashed-btm {
+		min-height: auto;
+
+		.line {
+			flex-direction: column;
+			width: 100%;
+			padding: 0;
+			background-image: none;
+
+			article {
+				width: 100%;
+				padding: 20px;
+			}
+		}
 	}
 }
 </style>

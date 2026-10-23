@@ -14,6 +14,13 @@
 	--spacing: 4px;
 	--z-connector: 2;
 
+	--content-max-width: 800px;
+	--content-padding: 30px;
+	--header-height: 60px;
+	--dashed-h: url(/src/assets/images/dashed-horizontal-light.svg);
+	--dashed-v: url(/src/assets/images/dashed-vertical-light.svg);
+	--connector: url(/src/assets/images/connector--light.svg);
+
 	--sans: system-ui, 'Segoe UI', Roboto, sans-serif;
 	--heading: system-ui, 'Segoe UI', Roboto, sans-serif;
 	--mono: ui-monospace, Consolas, monospace;
@@ -69,5 +76,19 @@ h1, h2 {
 	font-family: var(--heading);
 	font-weight: 500;
 	color: var(--text-h);
+}
+
+/* Utility: full-width horizontal dashed bottom line */
+.dashed-btm {
+	background-position: 0 100%;
+	background-image: var(--dashed-h);
+	background-repeat: repeat-x;
+}
+
+/* Utility: full-viewport-width centered flex container */
+.full-horizon {
+	display: flex;
+	justify-content: center;
+	width: 100vw;
 }
 

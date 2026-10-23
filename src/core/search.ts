@@ -7,10 +7,9 @@ interface SearchCondition {
 	tag: string;
 }
 
-function search(cond: SearchCondition) {
-	const art = articles.value.filter(art => {
+export function search(cond: SearchCondition) {
+	return articles.value.filter(art =>
 		art.title.includes(cond.title) &&
-		art.tag == cond.tag
-	});
-	return art;
+		art.tags?.includes(cond.tag)
+	);
 }
