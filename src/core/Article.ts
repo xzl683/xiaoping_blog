@@ -9,7 +9,7 @@ export default class Article implements IArticle {
 	summary: string;
 	author: string;
 	content: string;
-	tag: string;
+	tags: string[];
 	createTime: Time;
 
 	static getSummary(article: Article) {
@@ -27,7 +27,7 @@ export default class Article implements IArticle {
 		this.content = data.content;
 		this.summary = data.summary || Article.getSummary(this);
 		this.author = data.author;
-		this.tag = data.tag;
+		this.tags = data.tags;
 		this.createTime = data.createTime;
 	}
 	public getUrl() {

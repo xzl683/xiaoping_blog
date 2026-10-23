@@ -2,13 +2,12 @@
 import Nav from '@/components/Nav.vue';
 import ArticleCard from '@/components/ArticleCard.vue';
 
-import { useArticlesStore } from '@/composables/useArticlesStore';
-import { computed, ref } from 'vue';
+import { useArticleStore } from '@/composables/useArticlesStore';
+import { computed } from 'vue';
 import { isOdd } from '@/utils/math.ts';
-import Search from '@/components/Search.vue';
 // import TestModal from '@/components/TestModal.vue';
 
-const { articles } = useArticlesStore();
+const { articles } = useArticleStore();
 
 function chunkPairs<T>(arr: T[]) {
 	const result: T[][] = [];
@@ -19,15 +18,12 @@ function chunkPairs<T>(arr: T[]) {
 }
 
 const pairArts = computed(() => chunkPairs(articles.value));
-
-const openSearch = ref(false);
 </script>
 
 <template>
-	<div id="home" :class="{ 'open-search': openSearch }">
-		<Nav class="full-horizon" @open-search="openSearch = true" />
+	<div id="home">
+		<Nav class="full-horizon" />
 		<!-- <TestModal /> -->
-		<Search v-model:open="openSearch" />
 
 		<!-- Blog 介绍区（参考 Cloudflare 博客 Hero） -->
 		<div class="full-horizon dashed-btm">
@@ -93,10 +89,6 @@ const openSearch = ref(false);
 	align-items: center;
 	min-height: 100vh;
 	overflow-x: hidden;
-}
-
-#home.open-search {
-	overflow: hidden;
 }
 
 /* ===== 两侧竖向虚线（从 header 底部延伸到页面底部） ===== */

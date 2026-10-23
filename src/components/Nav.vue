@@ -1,15 +1,20 @@
 <script setup lang="ts">
-const emit = defineEmits<{
-	'openSearch': []
-}>();
+import { useSearch } from '@/store/search';
 
+const { open, isOpen } = useSearch();
 </script>
 
 <template>
 	<header class="site-header dashed-btm">
 		<RouterLink to="/" class="logo">我的博客</RouterLink>
-		<button id="search-button" @click="emit('openSearch')">
-			<img src="/src/assets/images/search-button.svg" alt="search" />
+		<button
+			type="button"
+			id="search-button"
+			@click="open"
+			:aria-expanded="isOpen"
+			aria-controls="search-dialog"
+		>
+			<img src="/src/assets/images/search-icon.svg" alt="search" />
 		</button>
 		<nav aria-label="主导航">
 			<a href="/">首页</a>
@@ -33,7 +38,7 @@ const emit = defineEmits<{
 	width: 100%;
 	height: 60px;
 
-	/* border-bottom: 1px #5f5f5f solid; */
+	border-bottom: 1px #c2c2c2 solid;
 }
 
 .logo {

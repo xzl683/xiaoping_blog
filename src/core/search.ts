@@ -1,6 +1,6 @@
-import { useArticlesStore } from '@/composables/useArticlesStore';
+import { useArticleStore } from '@/composables/useArticlesStore';
 
-const { articles } = useArticlesStore();
+const { articles } = useArticleStore();
 
 interface SearchCondition {
 	title: string;

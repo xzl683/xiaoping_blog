@@ -6,7 +6,7 @@ export interface IArticle {
 	summary?: string;
 	author: string;
 	content: string;
-	tag: string;
+	tags: string[];
 	createTime: Time;
 }
 

@@ -51,41 +51,8 @@ watch(
 				</div>
 			</header>
 
-			<p>{{ article!.content }}</p>
-
-			<!-- <section>
-				<h2>小标题</h2>
-				<p>这一节的内容。</p>
-			</section>
-
-			<figure>
-				<img src="demo.png" alt="示例图片说明">
-				<figcaption>图 1：示例说明</figcaption>
-			</figure>
-
-			<blockquote cite="https://example.com/source">
-				<p>这是一段引用内容。</p>
-				<footer>— <cite>某人</cite></footer>
-			</blockquote>
-
-			<pre><code>console.log('Hello, blog!');</code></pre>
-
-			<footer>
-				<p>标签：<a href="/tags/html">HTML</a>、<a href="/tags/css">CSS</a></p>
-			</footer> -->
+			<pre>{{ article!.content }}</pre>
 		</article>
-
-		<!-- <section id="comments">
-			<h2>评论</h2>
-
-			<article>
-				<header>
-					<h3>评论者</h3>
-					<p><time datetime="2026-10-16T12:00">2026-10-16 12:00</time></p>
-				</header>
-				<p>这是一条评论。</p>
-			</article>
-		</section> -->
 	</main>
 </template>
 
@@ -138,10 +105,43 @@ watch(
 main {
 	display: flex;
 	justify-content: center;
-	width: 100vw;
-
-	article {
-		max-width: 1200px;
+	> article {
+		> header {
+			time {
+				font-size: 0.75rem;
+			}
+		}
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		width: 90%;
 	}
 }
+
+pre {
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+	overflow-x: auto;
+}
+
+article {
+	background-image: url(/src/assets/images/dashed-vertical-light.svg);
+	background-repeat: repeat-y;
+}
+
+// article::before,
+// article::after {
+// 	content: "";
+// 	position: absolute;
+// 	top: 60px;
+// 	bottom: 0;
+// 	width: 1px;
+// 	background-image: url(../assets/images/dashed-vertical-light.svg);
+// 	background-repeat: repeat-y;
+// 	z-index: 0;
+// 	pointer-events: none;
+// }
+// article::after {
+// 	right: 100%;
+// }
 </style>
