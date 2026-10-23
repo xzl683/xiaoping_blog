@@ -1,12 +1,27 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import Footer from '@/components/Footer.vue';
+import BaseModal from '@/components/BaseModal.vue';
 
 import { useArticleStore } from '@/composables/useArticlesStore';
 
 const activeMode = ref<'add' | 'delete'>('add');
 
 const { articles } = useArticleStore();
+
+const confirmOpen = ref(false);
+const deleteId = ref<string | null>(null);
+
+function openDeleteDialog(id: string) {
+	deleteId.value = id;
+	confirmOpen.value = true;
+}
+
+function confirmDelete() {
+	articles.value = articles.value.filter(art => art.id !== deleteId.value);
+	console.log(deleteId.value);
+	confirmOpen.value = false;
+}
 </script>
 
 <template>
@@ -46,7 +61,7 @@ const { articles } = useArticleStore();
 		<Transition name="fade" mode="out-in">
 		<div class="full-horizon dashed-btm" v-if="activeMode === 'add'">
 			<section class="mode-panel dashed-section">
-				<form class="article-form" @submit.prevent>
+				<form class="article-form" @submit.prevent="console.log">
 					<div class="form-group">
 						<label for="title">标题</label>
 						<input id="title" type="text" placeholder="输入文章标题" />
@@ -91,7 +106,7 @@ const { articles } = useArticleStore();
 							<span class="author">{{ art.author }}</span>
 						</div>
 						<div class="delete-item-summary">{{ art.summary }}</div>
-						<button type="button" class="delete-btn">删除</button>
+						<button type="button" class="delete-btn" @click="openDeleteDialog(art.id)">删除</button>
 					</article>
 				</div>
 			</section>
