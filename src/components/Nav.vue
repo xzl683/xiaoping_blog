@@ -18,7 +18,7 @@ const { open, isOpen } = useSearch();
 		</button>
 		<nav aria-label="主导航">
 			<a href="/">首页</a>
-			<a href="/archive">归档</a>
+			<a href="/setting">设置</a>
 			<a href="/about">关于</a>
 		</nav>
 	</header>
@@ -37,11 +37,10 @@ const { open, isOpen } = useSearch();
 
 	width: 100%;
 	height: 60px;
-
-	border-bottom: 1px #c2c2c2 solid;
 }
 
 .logo {
+	flex: 1;
 	font-size: 1.2rem;
 	font-weight: 600;
 	color: var(--text-h);
@@ -50,13 +49,17 @@ const { open, isOpen } = useSearch();
 
 .site-header nav a {
 	margin-left: 24px;
+	padding: 5px;
 	color: var(--text);
+	border: 1px transparent solid;
 	text-decoration: none;
 	font-size: 0.95rem;
 }
 
 .site-header nav a:hover {
-	color: var(--accent);
+	border: 1px #d3d3d3 solid;
+	border-radius: 8px;
+	background-color: #f3f3f3;
 }
 
 #search-button {

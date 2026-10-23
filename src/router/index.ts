@@ -12,6 +12,10 @@ const routes: RouteRecordRaw[] = [
 		// 把参数转成 props 传给组件，组件不用依赖 useRoute
 		props: true,
 	}, {
+		path: '/setting',
+		name: 'setting',
+		component: () => import('@/views/SettingView.vue'),
+	}, {
 		path: '/:pathMatch(.*)*',
 		name: 'not-found',
 		component: () => import('@/views/NotFoundView.vue'),

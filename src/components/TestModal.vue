@@ -24,8 +24,8 @@ async function onSearchOpened() {
 	<button type="button" @click="searchOpen = true">搜索</button>
 
 	<!-- 确认弹窗：内容 + footer 插槽 -->
-	<BaseModal v-model:open="confirmOpen" title="确认删除？">
-		<p>删除后无法恢复，确定要删除这篇文章吗？</p>
+	<BaseModal v-model:open="confirmOpen" title="确认删除?">
+		<p>删除后无法恢复，确定要删除这篇文章吗?</p>
 
 		<template #footer>
 			<button type="button" @click="confirmOpen = false">取消</button>

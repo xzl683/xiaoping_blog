@@ -20,6 +20,7 @@
 	--dashed-h: url(/src/assets/images/dashed-horizontal-light.svg);
 	--dashed-v: url(/src/assets/images/dashed-vertical-light.svg);
 	--connector: url(/src/assets/images/connector--light.svg);
+	--dotted-bg-color: #ddd;
 
 	--sans: system-ui, 'Segoe UI', Roboto, sans-serif;
 	--heading: system-ui, 'Segoe UI', Roboto, sans-serif;
@@ -52,6 +53,7 @@
 		--accent-border: rgba(192, 132, 252, 0.5);
 		--social-bg: rgba(47, 48, 58, 0.5);
 		--shadow: rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
+		--dotted-bg-color: #2a2c36;
 	}
 
 	#social .button-icon {
@@ -90,5 +92,40 @@ h1, h2 {
 	display: flex;
 	justify-content: center;
 	width: 100vw;
+}
+
+/* 页面左右两侧（内容区外侧）的点状背景：
+   只铺在竖虚线以外，贯穿 header 底部到页面底部 */
+body {
+	position: relative;
+}
+
+body::before,
+body::after {
+	content: "";
+	position: absolute;
+	top: var(--header-height);
+	bottom: 0;
+	width: calc(50% - var(--content-max-width) / 2);
+	background-image: radial-gradient(circle, var(--dotted-bg-color) 1px, transparent 1px);
+	background-size: 16px 16px;
+	z-index: 0;
+	pointer-events: none;
+}
+
+body::before {
+	left: 0;
+}
+
+body::after {
+	right: 0;
+}
+
+@media (max-width: 800px) {
+	body::before,
+	body::after {
+		width: 20px;
+		background-size: 12px 12px;
+	}
 }
 

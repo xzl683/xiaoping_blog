@@ -16,9 +16,11 @@ export default class Article implements IArticle {
 		const { content } = article;
 		if(content.length <= maxSummaryLength) return content;
 		let endIndex = content.indexOf('。');
-		if(endIndex > maxSummaryLength) endIndex = content.indexOf('，');
-		if(endIndex == -1) endIndex = maxSummaryLength;
-		return article.content.slice(0, Math.min(endIndex + 1, maxSummaryLength));
+		if(endIndex > maxSummaryLength) {
+			endIndex = content.indexOf('，');
+			return content.slice(0, endIndex != -1 ? endIndex : maxSummaryLength) + '...';
+		}
+		return content.slice(0, endIndex + 1);
 	}
 
 	constructor(data: IArticle) {

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import Nav from '@/components/Nav.vue';
 import ArticleCard from '@/components/ArticleCard.vue';
+import Footer from '@/components/Footer.vue';
 
 import { useArticleStore } from '@/composables/useArticlesStore';
 import { computed } from 'vue';
@@ -22,9 +22,6 @@ const pairArts = computed(() => chunkPairs(articles.value));
 
 <template>
 	<div id="home">
-		<Nav class="full-horizon" />
-		<!-- <TestModal /> -->
-
 		<!-- Blog 介绍区（参考 Cloudflare 博客 Hero） -->
 		<div class="full-horizon dashed-btm">
 			<section class="blog-intro dashed-section">
@@ -57,9 +54,7 @@ const pairArts = computed(() => chunkPairs(articles.value));
 			</aside>
 		</div>
 
-		<footer class="site-footer">
-			<p><small>&copy; 2026 xzl</small></p>
-		</footer>
+		<Footer />
 	</div>
 </template>
 
@@ -80,7 +75,7 @@ const pairArts = computed(() => chunkPairs(articles.value));
 #home::after {
 	content: "";
 	position: absolute;
-	top: var(--header-height);
+	top: 0;
 	bottom: 0;
 	width: 1px;
 	background-image: var(--dashed-v);
@@ -186,20 +181,37 @@ const pairArts = computed(() => chunkPairs(articles.value));
 	}
 }
 
+.line:first-child {
+	position: relative;
+}
+.line:first-child::before,
+.line:first-child::after {
+	content: "";
+    position: absolute;
+    bottom: 0;
+
+	width: 12px;
+	height: 12px;
+
+	background-image: var(--connector);
+	background-repeat: no-repeat;
+    background-size: contain;
+	z-index: 1;
+}
+.line:first-child::before {
+	left: 0;
+    translate: -50% 50%;
+}
+.line:first-child::after {
+	right: 0;
+    translate: 50% 50%;
+}
+
 /* ===== 侧边栏 ===== */
 .sidebar {
 	width: 100%;
 	max-width: var(--content-max-width);
 	padding: 40px var(--content-padding);
-}
-
-/* ===== Footer ===== */
-.site-footer {
-	width: 100%;
-	max-width: var(--content-max-width);
-	padding: 40px var(--content-padding);
-	text-align: center;
-	color: var(--text);
 }
 
 /* ===== 手机端适配 ===== */
@@ -212,8 +224,7 @@ const pairArts = computed(() => chunkPairs(articles.value));
 	}
 
 	.blog-intro,
-	.sidebar,
-	.site-footer {
+	.sidebar {
 		padding-left: 20px;
 		padding-right: 20px;
 	}
