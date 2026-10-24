@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useSearch } from '@/store/search';
+import { useSearch } from '@/stores/search';
 
 const { open, isOpen } = useSearch();
 </script>
@@ -10,16 +10,17 @@ const { open, isOpen } = useSearch();
 		<button
 			type="button"
 			id="search-button"
+			aria-label="搜索文章"
 			@click="open"
 			:aria-expanded="isOpen"
 			aria-controls="search-dialog"
 		>
-			<img src="/src/assets/images/search-icon.svg" alt="search" />
+			<img src="/src/assets/images/search-icon.svg" alt="" aria-hidden="true" />
 		</button>
 		<nav aria-label="主导航">
-			<a href="/">首页</a>
-			<a href="/setting">设置</a>
-			<a href="/about">关于</a>
+			<router-link to="/" class="nav-link">首页</router-link>
+			<router-link to="/setting" class="nav-link">设置</router-link>
+			<router-link to="/about" class="nav-link">关于</router-link>
 		</nav>
 	</header>
 </template>
@@ -47,7 +48,7 @@ const { open, isOpen } = useSearch();
 	text-decoration: none;
 }
 
-.site-header nav a {
+.nav-link {
 	margin-left: 24px;
 	padding: 5px;
 	color: var(--text);
@@ -56,10 +57,10 @@ const { open, isOpen } = useSearch();
 	font-size: 0.95rem;
 }
 
-.site-header nav a:hover {
-	border: 1px #d3d3d3 solid;
-	border-radius: 8px;
-	background-color: #f3f3f3;
+.nav-link:hover {
+	border: 1px var(--border) solid;
+	border-radius: var(--radius-md);
+	background-color: var(--surface-2);
 }
 
 #search-button {
@@ -70,9 +71,10 @@ const { open, isOpen } = useSearch();
 	border-radius: 50%;
 	transition: all 300ms;
 	cursor: pointer;
+	transform: translateY(4px);
 
 	&:hover {
-		background-color: #f6f6f7;
+		background-color: var(--surface-2);
 	}
 }
 </style>

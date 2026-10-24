@@ -1,22 +1,46 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { computed, onUnmounted, ref, watch, watchEffect } from 'vue';
 import type Article from '@/core/Article';
 import { fetchArticle } from '@/api';
 import Footer from '@/components/Footer.vue';
+import { renderContent } from '@/utils/markdown';
 
 const props = defineProps<{ slug: string }>();
 
 const article = ref<Article | null>(null);
 const loading = ref(false);
+/** 文章不存在（与真正的加载异常区分开） */
+const notFound = ref(false);
 const error = ref<string | null>(null);
+
+const originalTitle = document.title;
+
+/** 标题跟随文章状态，作为副作用放在 watchEffect 里 */
+watchEffect(() => {
+	if (notFound.value) document.title = '文章不存在';
+	else if (article.value) document.title = article.value.title;
+	else document.title = originalTitle;
+});
+
+onUnmounted(() => {
+	document.title = originalTitle;
+});
+
+/** 自动识别 Markdown / 纯文本后渲染 */
+const renderedContent = computed(() =>
+	article.value ? renderContent(article.value.content) : '',
+);
 
 function loadArticle(slug: string) {
 	loading.value = true;
+	notFound.value = false;
 	error.value = null;
+	article.value = null;
+
 	try {
 		// 实际项目：fetch(`/api/posts/${slug}`) 或查 markdown
 		article.value = fetchArticle(slug);
-		document.title = article.value?.title ?? '文章不存在';
+		notFound.value = article.value === null;
 	} catch (e) {
 		error.value = '文章加载失败';
 	} finally {
@@ -29,27 +53,28 @@ function loadArticle(slug: string) {
 watch(
 	() => props.slug,
 	slug => loadArticle(slug),
-	{ immediate: true },
+	{ immediate: true }
 );
 </script>
 
 <template>
-	<div id="article">
-		<div class="full-horizon dashed-btm">
-			<p v-if="loading" class="article-detail loading-state">加载中…</p>
-			<p v-else-if="error" class="article-detail error-state">{{ error }}</p>
-			<article class="article-detail dashed-section" v-else>
+	<div id="article" class="page-frame">
+		<div class="full-horizon dashed-btm article-body">
+			<p v-if="loading" class="article-detail content-section loading-state">加载中…</p>
+			<p v-else-if="notFound" class="article-detail content-section not-found-state">文章不存在或已被删除</p>
+			<p v-else-if="error" class="article-detail content-section error-state">{{ error }}</p>
+			<article class="article-detail content-section" v-else>
 				<header>
-					<time :datetime="article!.createTime.toLocaleDateString()">
+					<time :datetime="article!.createTime.toISODateString()">
 						{{ article!.createTime.toChineseDateString() }}
 					</time>
 					<h1>{{ article!.title }}</h1>
 					<div class="article-author">
-						作者:<a rel="author" href="/about">{{ article!.author }}</a>
+						作者:<RouterLink rel="author" to="/about">{{ article!.author }}</RouterLink>
 					</div>
 				</header>
 
-				<pre>{{ article!.content }}</pre>
+				<div class="article-content" v-html="renderedContent" />
 			</article>
 		</div>
 
@@ -61,61 +86,17 @@ watch(
 @content-max-width: 800px;
 
 #article {
-	position: relative;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
 	min-height: 100vh;
-	overflow-x: hidden;
+}
 
-	/* 两侧竖向虚线（与 HomeView 一致） */
-	&::before,
-	&::after {
-		content: "";
-		position: absolute;
-		top: 0;
-		bottom: 0;
-		width: 1px;
-		background-image: var(--dashed-v);
-		background-repeat: repeat-y;
-		z-index: 0;
-		pointer-events: none;
-	}
-	&::before {
-		left: calc(50% - var(--content-max-width) / 2);
-	}
-	&::after {
-		right: calc(50% - var(--content-max-width) / 2);
-	}
+.article-body {
+	flex: 1;
 }
 
 .article-detail {
-	position: relative;
-	width: 100%;
-	max-width: var(--content-max-width);
-	padding: var(--content-padding);
-
-	&::before,
-	&::after {
-		content: "";
-		position: absolute;
-		bottom: 0;
-		width: 12px;
-		height: 12px;
-		background-image: var(--connector);
-		background-repeat: no-repeat;
-		background-size: contain;
-		z-index: 1;
-	}
-	&::before {
-		left: 0;
-		translate: -50% 50%;
-	}
-	&::after {
-		right: 0;
-		translate: 50% 50%;
-	}
-
 	> header {
 		margin-bottom: 20px;
 		time {
@@ -145,36 +126,149 @@ watch(
 	text-decoration: none;
 }
 
-pre {
-	white-space: pre-wrap;
-	overflow-wrap: break-word;
-	overflow-x: auto;
-	font-family: var(--sans);
+/* ===== 正文：纯文本 / Markdown 共用排版 ===== */
+.article-content {
 	font-size: 1rem;
-	line-height: 1.7;
+	line-height: 1.8;
 	color: var(--text);
-	margin: 0;
+	overflow-wrap: break-word;
+
+	:deep(p) {
+		margin: 0 0 1.1em;
+	}
+
+	:deep(h1),
+	:deep(h2),
+	:deep(h3),
+	:deep(h4) {
+		margin: 1.6em 0 0.6em;
+		color: var(--text-h);
+		font-weight: 700;
+		line-height: 1.3;
+	}
+
+	:deep(h1) {
+		font-size: 1.6rem;
+	}
+	:deep(h2) {
+		font-size: 1.35rem;
+	}
+	:deep(h3) {
+		font-size: 1.15rem;
+	}
+	:deep(h4) {
+		font-size: 1rem;
+	}
+
+	:deep(ul),
+	:deep(ol) {
+		margin: 0 0 1.1em;
+		padding-left: 1.5em;
+	}
+
+	:deep(li) {
+		margin: 0.3em 0;
+	}
+
+	:deep(li > p) {
+		margin: 0;
+	}
+
+	:deep(a) {
+		color: var(--accent);
+		text-decoration: none;
+	}
+
+	:deep(a:hover) {
+		text-decoration: underline;
+	}
+
+	:deep(strong) {
+		color: var(--text-h);
+		font-weight: 600;
+	}
+
+	:deep(blockquote) {
+		margin: 0 0 1.1em;
+		padding: 2px 0 2px 16px;
+		border-left: 3px solid var(--accent-border);
+		color: var(--text);
+	}
+
+	:deep(code) {
+		padding: 2px 5px;
+		font-family: var(--mono);
+		font-size: 0.9em;
+		background: var(--surface-2);
+		border-radius: 4px;
+	}
+
+	:deep(pre) {
+		margin: 0 0 1.1em;
+		padding: 14px 16px;
+		overflow-x: auto;
+		background: var(--surface-2);
+		border: 1px solid var(--border);
+		border-radius: var(--radius-md);
+		line-height: 1.6;
+	}
+
+	:deep(pre code) {
+		padding: 0;
+		font-size: 0.875rem;
+		background: transparent;
+	}
+
+	:deep(img) {
+		max-width: 100%;
+		height: auto;
+		border-radius: var(--radius-md);
+	}
+
+	:deep(hr) {
+		margin: 2em 0;
+		border: none;
+		border-top: 1px dashed var(--border);
+	}
+
+	:deep(table) {
+		width: 100%;
+		margin: 0 0 1.1em;
+		border-collapse: collapse;
+		font-size: 0.9rem;
+	}
+
+	:deep(th),
+	:deep(td) {
+		padding: 8px 10px;
+		border: 1px solid var(--border);
+		text-align: left;
+	}
+
+	:deep(th) {
+		color: var(--text-h);
+		font-weight: 600;
+		background: var(--surface-2);
+	}
+
+	:deep(> *:last-child) {
+		margin-bottom: 0;
+	}
 }
 
 .loading-state,
+.not-found-state,
 .error-state {
 	text-align: center;
 	color: var(--text);
-	padding: 60px var(--content-padding);
+	--section-pad-y: 60px;
 
 	&.error-state {
-		color: #e74c3c;
+		color: var(--danger);
 	}
 }
 
 @media (max-width: @content-max-width) {
-	#article::before {
-		left: 20px;
-	}
-	#article::after {
-		right: 20px;
-	}
-
 	.article-detail {
 		padding: 20px;
 	}

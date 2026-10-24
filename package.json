@@ -7,10 +7,13 @@
     "dev": "vite",
     "build": "vue-tsc -b && vite build",
     "preview": "vite preview",
-    "format": "prettier --write --experimental-cli src/"
+    "format": "prettier --write --experimental-cli src/",
+    "test": "vitest run"
   },
   "dependencies": {
+    "dompurify": "^3.4.17",
     "less": "^4.9.1",
+    "marked": "^18.1.1",
     "prettier": "^3.9.10",
     "vite-plugin-vue-devtools": "^8.2.1",
     "vue": "^3.5.42",
@@ -19,9 +22,12 @@
   "devDependencies": {
     "@types/node": "^24.13.3",
     "@vitejs/plugin-vue": "^6.0.8",
+    "@vue/test-utils": "^2.5.1",
     "@vue/tsconfig": "^0.9.1",
+    "jsdom": "^30.1.3",
     "typescript": "~6.0.2",
     "vite": "^8.3.0",
+    "vitest": "^5.0.5",
     "vue-tsc": "^3.3.11"
   }
 }

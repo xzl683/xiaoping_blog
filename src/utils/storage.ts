@@ -1,25 +1,26 @@
-import Article from "../core/Article";
-import { articles as initAritcles } from "../mock/init_articles";
-import type { IArticle } from "../types";
+import Article from '../core/Article';
+import type { InputArticleData } from '@/types';
 
 const storageKey = 'xzl-blog-storage' as const;
 
 export const storage = {
-	get() {
+	/** 无存档返回 null；存档为空数组返回 []；解析失败按无存档处理 */
+	get(): Article[] | null {
 		const json = localStorage.getItem(storageKey);
-		let articleData: IArticle[];
-		if(json === null) {
-			articleData = initAritcles;
-		} else
+		if(json === null) return null;
+
 		try {
-			articleData = JSON.parse(json) as IArticle[];
-		} catch(e) {
-			articleData = initAritcles;
+			const list: unknown = JSON.parse(json);
+			if(!Array.isArray(list)) return null;
+			// 存档是普通对象，需要还原成 Article 实例以保留日期格式化等方法
+			return list
+				.filter((item): item is InputArticleData => !!item && typeof item === 'object')
+				.map(item => new Article(item));
+		} catch {
+			return null;
 		}
-		return articleData.map(ad => new Article(ad));
-    },
-	set(value: IArticle[]) {
-		const blogJson = JSON.stringify(value);
-		localStorage.setItem(storageKey, blogJson);
-	}
+	},
+	set(articles: Article[]) {
+		localStorage.setItem(storageKey, JSON.stringify(articles));
+	},
 }

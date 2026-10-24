@@ -1,19 +1,16 @@
+import type { TimeData } from '@/types';
+
 export class Time {
 	public year: number;
 	public month: number;
 	public day: number;
-	public hours: number;
-	public minutes: number;
-	public seconds: number;
-
-	constructor() {
-		const { year, month, day, hours, minutes, seconds } = this.getCurrentTime();
-		this.year	= year;
-		this.month   = month;
-		this.day	 = day;
-		this.hours   = hours;
-		this.minutes = minutes;
-		this.seconds = seconds;
+	
+	// 传入已持久化的时间数据则复用，否则取当前时间
+	constructor(data?: Partial<TimeData>) {
+		const current = this.getCurrentTime();
+		this.year  = data?.year  ?? current.year;
+		this.month = data?.month ?? current.month;
+		this.day   = data?.day	 ?? current.day;
 	}
 
 	public getCurrentTime() {
@@ -21,15 +18,14 @@ export class Time {
 		return {
 			year   : date.getFullYear(),
 			month  : date.getMonth() + 1,
-			day	: date.getDate(),
-			hours  : date.getHours(),
-			minutes: date.getMinutes(),
-			seconds: date.getSeconds()
+			day	: date.getDate()
 		};
 	}
 
-	public toLocaleDateString() {
-		return `${this.year}-${this.month}-${this.day}` as const;
+	/** 补零的 YYYY-MM-DD，可直接用于 <time datetime> */
+	public toISODateString() {
+		const pad = (n: number) => String(n).padStart(2, '0');
+		return `${this.year}-${pad(this.month)}-${pad(this.day)}` as const;
 	}
 
 	public toChineseDateString() {

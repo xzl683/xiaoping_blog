@@ -1,19 +1,25 @@
 <script setup lang="ts">
-import { computed, nextTick, ref } from 'vue';
-import { useRouter } from 'vue-router';
-import BaseModal from '@/components/BaseModal.vue';
-import { useArticleStore } from '@/composables/useArticlesStore';
-import type Article from '@/core/Article';
-import { useSearch } from '@/store/search';
+import { computed, nextTick, ref, useTemplateRef } from 'vue';
 
-const { isOpen } = useSearch();
-const router = useRouter();
+import BaseModal from '@/components/BaseModal.vue';
+import { useArticleStore } from '@/stores/articles';
+import type Article from '@/core/Article';
+import { useSearch } from '@/stores/search';
+import { highlight } from '@/utils/highlightKeyWord';
+
+const { isOpen, close } = useSearch();
 const { articles } = useArticleStore();
 
 const keyword = ref('');
 /** 多选标签，默认 ['all']；all 与其他标签互斥 */
 const selectedTags = ref<string[]>(['all']);
-const inputRef = ref<HTMLInputElement | null>(null);
+const inputRef = useTemplateRef<HTMLInputElement>('inputRef');
+
+/** 当前选中的标签集合，供模板直接判断 */
+const selectedTagSet = computed(() => new Set(selectedTags.value));
+/** 命中筛选的普通标签（不含 all） */
+const activeTagSet = computed(() => new Set(selectedTags.value.filter(t => t !== 'all')));
+const isAllSelected = computed(() => selectedTagSet.value.has('all'));
 
 /* ---------- 标签列表：从文章里动态收集 ---------- */
 const allTags = computed(() => {
@@ -23,15 +29,6 @@ const allTags = computed(() => {
 	}
 	return ['all', ...set];
 });
-
-/* ---------- 选中状态判断 ---------- */
-function isAllSelected() {
-	return selectedTags.value.includes('all');
-}
-
-function isTagChecked(t: string) {
-	return selectedTags.value.includes(t);
-}
 
 /* ---------- 点击标签：all 互斥，非 all 多选 ---------- */
 function toggleTag(t: string) {
@@ -53,7 +50,7 @@ function toggleTag(t: string) {
 }
 
 /* ---------- 是否处于“还没开始搜”的状态 ---------- */
-const isIdle = computed(() => !keyword.value.trim() && isAllSelected());
+const isIdle = computed(() => !keyword.value.trim() && isAllSelected.value);
 
 /* ---------- 搜索结果 ---------- */
 const resultArt = computed<Article[]>(() => {
@@ -61,7 +58,7 @@ const resultArt = computed<Article[]>(() => {
 
 	const kw = keyword.value.trim().toLowerCase();
 	const tags = selectedTags.value;
-	const all = isAllSelected();
+	const all = isAllSelected.value;
 
 	return articles.value.filter(art => {
 		const matchKeyword = !kw || art.title.toLowerCase().includes(kw);
@@ -74,56 +71,26 @@ const resultArt = computed<Article[]>(() => {
 	});
 });
 
-/* ---------- 打开时聚焦搜索框 ---------- */
+/** 结果项 + 标题高亮片段 */
+const highlightedResults = computed(() =>
+	resultArt.value.map(article => ({
+		article,
+		titleSegments: highlight(keyword.value.trim(), article.title),
+	})),
+);
+
 async function focusInput() {
 	await nextTick();
 	inputRef.value?.focus();
-}
-
-/* ---------- 跳转并关闭 ---------- */
-function goToArticle(article: Article) {
-	isOpen.value = false;
-	router.push({ name: 'article', params: { slug: article.id } });
-}
-
-/* ---------- 标题关键词高亮 ---------- */
-interface Segment {
-	text: string;
-	match: boolean;
-}
-
-function highlight(text: string): Segment[] {
-	const kw = keyword.value.trim();
-	if (!kw) return [{ text, match: false }];
-
-	const lowerText = text.toLowerCase();
-	const lowerKw = kw.toLowerCase();
-	const segments: Segment[] = [];
-
-	let start = 0;
-	let idx = lowerText.indexOf(lowerKw);
-
-	while (idx !== -1) {
-		if (idx > start) segments.push({ text: text.slice(start, idx), match: false });
-		segments.push({ text: text.slice(idx, idx + kw.length), match: true });
-		start = idx + kw.length;
-		idx = lowerText.indexOf(lowerKw, start);
-	}
-
-	if (start < text.length) segments.push({ text: text.slice(start), match: false });
-	return segments;
-}
-
-/* ---------- 文章标签是否命中当前筛选 ---------- */
-function isTagMatched(t: string) {
-	return !isAllSelected() && selectedTags.value.includes(t);
 }
 </script>
 
 <template>
 	<BaseModal
+		id="search-dialog"
 		v-model:open="isOpen"
 		title="搜索文章"
+		header-close
 		:style="{ width: 'min(92vw, 640px)' }"
 		@opened="focusInput()"
 	>
@@ -153,8 +120,8 @@ function isTagMatched(t: string) {
 					:key="t"
 					type="button"
 					class="tag-chip"
-					:class="{ active: isTagChecked(t) }"
-					:aria-pressed="isTagChecked(t)"
+					:class="{ active: selectedTagSet.has(t) }"
+					:aria-pressed="selectedTagSet.has(t)"
 					@click="toggleTag(t)"
 				>
 					{{ t === 'all' ? '全部' : t }}
@@ -168,41 +135,39 @@ function isTagMatched(t: string) {
 				</div>
 
 				<template v-else>
-					<article
-						v-for="article in resultArt"
-						:key="article.id"
+					<RouterLink
+						v-for="result in highlightedResults"
+						:key="result.article.id"
 						class="result-item"
-						role="link"
-						tabindex="0"
-						@click="goToArticle(article)"
-						@keydown.enter="goToArticle(article)"
+						:to="{ name: 'article', params: { slug: result.article.id } }"
+						@click="close"
 					>
 						<header>
 							<span class="title">
-								<template v-for="(seg, i) in highlight(article.title)" :key="i">
+								<template v-for="(seg, i) in result.titleSegments" :key="i">
 									<mark v-if="seg.match">{{ seg.text }}</mark>
 									<template v-else>{{ seg.text }}</template>
 								</template>
 							</span>
-							<span class="author">{{ article.author }}</span>
-							<time :datetime="article.createTime.toLocaleDateString()">
-								{{ article.createTime.toChineseDateString() }}
+							<span class="author">{{ result.article.author }}</span>
+							<time :datetime="result.article.createTime.toISODateString()">
+								{{ result.article.createTime.toChineseDateString() }}
 							</time>
 						</header>
 
-						<p class="summary">{{ article.summary }}</p>
+						<p class="summary">{{ result.article.summary }}</p>
 
-						<div v-if="article.tags?.length" class="tags">
+						<div v-if="result.article.tags?.length" class="tags">
 							<span
-								v-for="t in article.tags"
+								v-for="t in result.article.tags"
 								:key="t"
 								class="tag"
-								:class="{ 'tag--match': isTagMatched(t) }"
+								:class="{ 'tag--match': activeTagSet.has(t) }"
 							>
 								{{ t }}
 							</span>
 						</div>
-					</article>
+					</RouterLink>
 				</template>
 			</div>
 		</div>
@@ -223,7 +188,7 @@ function isTagMatched(t: string) {
 	gap: 12px;
 	flex-shrink: 0;
 	padding: 4px 6px;
-	border-bottom: 1px solid #eee;
+	border-bottom: 1px solid var(--divider);
 
 	.search-icon {
 		flex-shrink: 0;
@@ -243,7 +208,7 @@ function isTagMatched(t: string) {
 		font-size: 1rem;
 
 		&::placeholder {
-			color: #aaa;
+			color: var(--muted);
 		}
 	}
 }
@@ -258,24 +223,24 @@ function isTagMatched(t: string) {
 	overflow-y: auto;
 	padding: 8px 6px;
 	margin-bottom: 4px;
-	border-bottom: 1px solid #eee;
+	border-bottom: 1px solid var(--divider);
 
 	&::-webkit-scrollbar {
 		width: 6px;
 	}
 
 	&::-webkit-scrollbar-thumb {
-		background: #e0e0e0;
+		background: var(--border);
 		border-radius: 10px;
 	}
 }
 
 .tag-chip {
 	padding: 2px 10px;
-	border: 1px solid #ddd;
-	border-radius: 999px;
-	background: #fff;
-	color: #5a6b82;
+	border: 1px solid var(--border);
+	border-radius: var(--radius-pill);
+	background: var(--surface);
+	color: var(--text);
 	font-size: 0.8rem;
 	line-height: 1.6;
 	cursor: pointer;
@@ -285,19 +250,19 @@ function isTagMatched(t: string) {
 		color 120ms ease;
 
 	&:hover {
-		border-color: #b9c6d6;
-		background: #f7f9fc;
+		border-color: var(--accent-border);
+		background: var(--surface-2);
 	}
 
 	&:focus-visible {
-		outline: 2px solid var(--accent-border, #4a90e2);
+		outline: 2px solid var(--accent-border);
 		outline-offset: 1px;
 	}
 
 	&.active {
-		border-color: var(--accent-border, #4a90e2);
-		background: var(--accent-bg, #eaf2ff);
-		color: var(--accent-text, #1d4ed8);
+		border-color: var(--accent-border);
+		background: var(--accent-bg);
+		color: var(--accent);
 		font-weight: 600;
 	}
 }
@@ -314,7 +279,7 @@ function isTagMatched(t: string) {
 	}
 
 	&::-webkit-scrollbar-thumb {
-		background: #d4d4d4;
+		background: var(--border);
 		border-radius: 10px;
 	}
 
@@ -328,16 +293,19 @@ function isTagMatched(t: string) {
 	align-items: center;
 	justify-content: center;
 	height: 100%;
-	color: #999;
+	color: var(--muted);
 	font-size: 0.9rem;
 }
 
 /* ---------- 结果项 ---------- */
 .result-item {
+	display: block;
 	margin-bottom: 4px;
 	padding: 10px 12px;
 	border: 1px solid transparent;
-	border-radius: 8px;
+	border-radius: var(--radius-md);
+	color: inherit;
+	text-decoration: none;
 	cursor: pointer;
 	transition:
 		background-color 120ms ease,
@@ -345,8 +313,8 @@ function isTagMatched(t: string) {
 
 	&:hover,
 	&:focus-visible {
-		background-color: var(--accent-bg, #f5f8ff);
-		border-color: var(--accent-border, #d6e4ff);
+		background-color: var(--accent-bg);
+		border-color: var(--accent-border);
 		outline: none;
 	}
 
@@ -366,7 +334,7 @@ function isTagMatched(t: string) {
 
 		mark {
 			background: transparent;
-			color: #d97706;
+			color: var(--warning);
 			font-weight: 700;
 		}
 	}
@@ -374,21 +342,21 @@ function isTagMatched(t: string) {
 	.author {
 		flex-shrink: 0;
 		font-size: 0.8rem;
-		color: #888;
+		color: var(--muted);
 	}
 
 	time {
 		flex-shrink: 0;
 		font-size: 0.8rem;
-		color: #aaa;
+		color: var(--muted);
 	}
 
 	.summary {
 		margin: 0;
 		font-size: 0.85rem;
-		color: #707070;
+		color: var(--text);
 		display: -webkit-box;
-		-webkit-line-clamp: 2;
+		line-clamp: 2;
 		-webkit-box-orient: vertical;
 		overflow: hidden;
 	}
@@ -402,9 +370,9 @@ function isTagMatched(t: string) {
 
 	.tag {
 		padding: 1px 8px;
-		border-radius: 999px;
-		background: #eef2f7;
-		color: #5a6b82;
+		border-radius: var(--radius-pill);
+		background: var(--surface-2);
+		color: var(--text);
 		font-size: 0.75rem;
 		transition:
 			background-color 120ms ease,
@@ -412,8 +380,8 @@ function isTagMatched(t: string) {
 
 		/* 命中当前筛选的标签 */
 		&--match {
-			background: #fff3cd;
-			color: #b45309;
+			background: var(--warning-bg);
+			color: var(--warning);
 			font-weight: 600;
 		}
 	}

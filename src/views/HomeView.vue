@@ -2,29 +2,45 @@
 import ArticleCard from '@/components/ArticleCard.vue';
 import Footer from '@/components/Footer.vue';
 
-import { useArticleStore } from '@/composables/useArticlesStore';
+import { useArticleStore } from '@/stores/articles';
 import { computed } from 'vue';
 import { isOdd } from '@/utils/math.ts';
-// import TestModal from '@/components/TestModal.vue';
+import type Article from '@/core/Article';
 
 const { articles } = useArticleStore();
 
-function chunkPairs<T>(arr: T[]) {
-	const result: T[][] = [];
-	if(isOdd(arr.length)) result.push([arr[0]]);
-	for(let i = result.length; i < arr.length; i += 2)
-		result.push(arr.slice(i, i + 2));
-	return result;
+interface HomeRow {
+	/** 行 key：取该行首篇文章 id，增删文章时能复用正确的行 */
+	key: string;
+	items: Article[];
+	/** 文章总数为奇数时，首行只放一篇并占满整行 */
+	wholeLine: boolean;
 }
 
-const pairArts = computed(() => chunkPairs(articles.value));
+const rows = computed<HomeRow[]>(() => {
+	const list = articles.value;
+	const result: HomeRow[] = [];
+	let start = 0;
+
+	if (isOdd(list.length)) {
+		result.push({ key: list[0].id, items: [list[0]], wholeLine: true });
+		start = 1;
+	}
+
+	for (let i = start; i < list.length; i += 2) {
+		const items = list.slice(i, i + 2);
+		result.push({ key: items[0].id, items, wholeLine: false });
+	}
+
+	return result;
+});
 </script>
 
 <template>
-	<div id="home">
+	<div id="home" class="page-frame">
 		<!-- Blog 介绍区（参考 Cloudflare 博客 Hero） -->
 		<div class="full-horizon dashed-btm">
-			<section class="blog-intro dashed-section">
+			<section class="blog-intro content-section">
 				<h1 class="blog-title">我的博客</h1>
 				<p class="blog-subtitle">
 					技术深度解析、产品更新，以及来自助力构建更美好互联网的团队的洞察。
@@ -33,20 +49,19 @@ const pairArts = computed(() => chunkPairs(articles.value));
 		</div>
 
 		<main class="articles-list">
-			<div class="dashed-btm" v-for="i in Math.ceil(articles.length / 2)" :key="i">
-				<div class="line">
+			<div v-for="(row, i) in rows" :key="row.key" class="dashed-btm">
+				<div class="line" :class="{ 'whole-line': row.wholeLine, 'first': i === 0 }">
 					<ArticleCard
-						v-for="art in pairArts[i - 1]"
-						:article="art"
+						v-for="art in row.items"
 						:key="art.id"
-						:class="{ 'whole-line': i == 1 && isOdd(articles.length) }"
+						:article="art"
 					/>
 				</div>
 			</div>
 		</main>
 
 		<div class="full-horizon dashed-btm">
-			<aside class="sidebar dashed-section" aria-label="侧边栏">
+			<aside class="sidebar content-section" aria-label="侧边栏">
 				<section>
 					<h2>关于我</h2>
 					<p>前端开发者，喜欢写博客。</p>
@@ -62,69 +77,18 @@ const pairArts = computed(() => chunkPairs(articles.value));
 @content-max-width: 800px;
 
 #home {
-	position: relative;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
 	min-height: 100vh;
-	overflow-x: hidden;
 }
-
-/* ===== 两侧竖向虚线（从 header 底部延伸到页面底部） ===== */
-#home::before,
-#home::after {
-	content: "";
-	position: absolute;
-	top: 0;
-	bottom: 0;
-	width: 1px;
-	background-image: var(--dashed-v);
-	background-repeat: repeat-y;
-	z-index: 0;
-	pointer-events: none;
-}
-#home::before {
-	left: calc(50% - var(--content-max-width) / 2);
-}
-#home::after {
-	right: calc(50% - var(--content-max-width) / 2);
-}
-
 
 /* ===== Blog 介绍区（Hero） ===== */
 .blog-intro {
-	position: relative;
 	display: flex;
 	flex-direction: column;
 	gap: 20px;
-
-	width: 100%;
-	max-width: var(--content-max-width);
-	padding: var(--content-padding);
 	text-align: left;
-}
-
-.blog-intro::before,
-.blog-intro::after {
-	content: "";
-    position: absolute;
-    bottom: 0;
-
-	width: 12px;
-	height: 12px;
-
-	background-image: var(--connector);
-	background-repeat: no-repeat;
-    background-size: contain;
-	z-index: 1;
-}
-.blog-intro::before {
-	left: 0;
-    translate: -50% 50%;
-}
-.blog-intro::after {
-	right: 0;
-    translate: 50% 50%;
 }
 
 .blog-title {
@@ -142,14 +106,11 @@ const pairArts = computed(() => chunkPairs(articles.value));
 
 /* ===== 文章列表（两列网格） ===== */
 .articles-list {
-	// position: relative;
-	
-	width: 100vw;
+	width: 100%;
 
 	> .dashed-btm {
 		display: flex;
 		justify-content: center;
-		min-height: 382px;
 	}
 
 	.line {
@@ -169,7 +130,7 @@ const pairArts = computed(() => chunkPairs(articles.value));
 
 			display: flex;
 			flex-direction: column;
-			justify-content: center;
+			justify-content: flex-start;
 			gap: 10px;
 
 			padding: var(--content-padding);
@@ -184,51 +145,39 @@ const pairArts = computed(() => chunkPairs(articles.value));
 .line:first-child {
 	position: relative;
 }
-.line:first-child::before,
-.line:first-child::after {
-	content: "";
-    position: absolute;
-    bottom: 0;
 
-	width: 12px;
-	height: 12px;
+.articles-list .first {
+	&::before,
+	&::after {
+		content: "";
+		position: absolute;
+		bottom: 0;
 
-	background-image: var(--connector);
-	background-repeat: no-repeat;
-    background-size: contain;
-	z-index: 1;
-}
-.line:first-child::before {
-	left: 0;
-    translate: -50% 50%;
-}
-.line:first-child::after {
-	right: 0;
-    translate: 50% 50%;
+		width: 12px;
+		height: 12px;
+
+		background-image: var(--connector);
+		background-repeat: no-repeat;
+		background-size: contain;
+		z-index: 1;
+	}
+	&::before {
+		left: 0;
+		translate: -50% 50%;
+	}
+	&::after {
+		right: 0;
+		translate: 50% 50%;
+	}
 }
 
 /* ===== 侧边栏 ===== */
 .sidebar {
-	width: 100%;
-	max-width: var(--content-max-width);
-	padding: 40px var(--content-padding);
+	--section-pad-y: 40px;
 }
 
 /* ===== 手机端适配 ===== */
 @media (max-width: @content-max-width) {
-	#home::before {
-		left: 20px;
-	}
-	#home::after {
-		right: 20px;
-	}
-
-	.blog-intro,
-	.sidebar {
-		padding-left: 20px;
-		padding-right: 20px;
-	}
-
 	.articles-list > .dashed-btm {
 		min-height: auto;
 
@@ -241,6 +190,12 @@ const pairArts = computed(() => chunkPairs(articles.value));
 			article {
 				width: 100%;
 				padding: 20px;
+			}
+
+			article:first-child {
+				background-position: 0 100%;
+				background-image: var(--dashed-h);
+				background-repeat: repeat-x;
 			}
 		}
 	}

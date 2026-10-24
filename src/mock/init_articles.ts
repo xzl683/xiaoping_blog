@@ -1,10 +1,7 @@
-import Article from "../core/Article";
-import type { IArticle } from "../types";
-import { Time } from "../utils/Time";
+import type { InputArticleData } from "@/types";
 
-const articleData: IArticle[] = [
+export const articleData: InputArticleData[] = [
 	{
-		id: '1',
 		title: 'python linkedlist',
 		content: `数据结构是计算机科学必须掌握的一门学问，很多的教材都是用C语言实现链表，因为C有指针，可以很方便的控制内存，很方便就实现链表，其他的语言，则没那么方便，有很多都是用模拟链表.
      因为python是动态语言，可以直接把对象赋值给新的变量。在C/C++中，通常采用“指针+结构体”来实现链表；而在Python中，则可以采用“引用+类”来实现链表。
@@ -253,9 +250,7 @@ from：https://www.cnblogs.com/petrolero/p/9822008.html
 原文链接：https://blog.csdn.net/qq_30815237/article/details/90750349`,
 		author: 'xzl',
 		tags: ['python', 'code', 'study'],
-		createTime: new Time()
 	}, {
-		id: '2',
 		title: 'hello world',
 		content: `GitHub 构建的目标是让人们编写代码、将其组织到存储库中，并通过分支、提交、问题和 Pull Request 进行协作。
 但下一代软件将以不同于以往的方式构建，因为它将服务于一种不同类型的开发者：智能体。
@@ -267,38 +262,26 @@ from：https://www.cnblogs.com/petrolero/p/9822008.html
 今年早些时候，我们推出了 Artifacts。这是一个版本化文件系统，兼容 Git，可扩展到数百万个代码库。从一开始，我们就将 Artifacts 设计为一套可编程原语，开发者可以利用这些原语构建自己的产品、工作流程和抽象概念。`,
 		author: 'xzl',
 		tags: ['code'],
-		createTime: new Time()
 	}, {
-		id: '3',
 		title: 'hello world',
 		content: '3 blog',
 		author: 'xzl',
 		tags: ['post'],
-		createTime: new Time()
 	}, {
-		id: '4',
 		title: 'hello world',
 		content: '4 blog',
 		author: 'xzl',
 		tags: ['code', 'study'],
-		createTime: new Time()
 	}, {
-		id: '5',
 		title: 'hello world',
 		content: '5 blog',
 		author: 'xzl',
 		tags: ['code'],
-		createTime: new Time()
 	},
 	// {
-	// 	id: '6',
 	// 	title: 'hello world',
 	// 	content: '6 blog',
 	// 	author: 'xzl',
 	// 	tags: ['code'],
-	// 	createTime: new Time()
 	// }
 ];
-
-export const articles = articleData.map(a => new Article(a));
-

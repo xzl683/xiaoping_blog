@@ -8,18 +8,21 @@ const { article } = defineProps<{
 
 <template>
 	<article class="article-card">
-		<time class="article-date" :datetime="article.createTime.toLocaleDateString()">
+		<time class="article-date" :datetime="article.createTime.toISODateString()">
 			{{ article.createTime.toChineseDateString() }}
 		</time>
 		<h2 class="article-title">
-			<RouterLink :to="{ name: 'article', params: { slug: article.id } }">
+			<router-link
+				class="article-title-link"
+				:to="{ name: 'article', params: { slug: article.id } }"
+			>
 				{{ article.title }}
-			</RouterLink>
+			</router-link>
 		</h2>
 		<p class="article-summary">{{ article.summary }}</p>
 		<p class="article-author">
 			作者：
-			<a rel="author" href="/about">{{ article.author }}</a>
+			<RouterLink rel="author" to="/about">{{ article.author }}</RouterLink>
 		</p>
 	</article>
 </template>
@@ -43,13 +46,13 @@ const { article } = defineProps<{
 	line-height: 1.3;
 }
 
-.article-title a {
+.article-title-link {
 	color: var(--text-h);
 	text-decoration: none;
 	cursor: pointer;
 }
 
-.article-title a:hover {
+.article-title-link:hover {
 	color: var(--accent);
 }
 

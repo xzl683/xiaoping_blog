@@ -77,11 +77,19 @@ function onDialogClick(e: MouseEvent) {
 		@click="onDialogClick"
 	>
 		<div class="modal-inner">
-			<header v-if="headerClose" class="modal-header">
+			<header v-if="title || $slots.header || headerClose" class="modal-header">
 				<slot name="header">
 					<h2 v-if="title" :id="titleId" class="modal-title">{{ title }}</h2>
 				</slot>
-				<button type="button" class="modal-close" aria-label="关闭" @click="open = false">×</button>
+				<button
+					v-if="headerClose"
+					type="button"
+					class="modal-close"
+					aria-label="关闭"
+					@click="open = false"
+				>
+					×
+				</button>
 			</header>
 
 			<div class="modal-body">
@@ -99,10 +107,11 @@ function onDialogClick(e: MouseEvent) {
 .base-modal {
 	padding: 0; /* 关键：让点击 dialog 自身 = 点击 backdrop */
 	border: none;
-	border-radius: 12px;
+	border-radius: var(--radius-lg);
 	/* width: min(90vw, 480px);
 	max-height: min(85vh, 640px); */
-	background: #fff;
+	background: var(--surface);
+	color: var(--text-h);
 	overflow: hidden;
 }
 
@@ -122,7 +131,7 @@ function onDialogClick(e: MouseEvent) {
 	align-items: center;
 	gap: 12px;
 	padding: 16px 20px;
-	border-bottom: 1px solid #eee;
+	border-bottom: 1px solid var(--divider);
 }
 
 .modal-title {
@@ -136,8 +145,12 @@ function onDialogClick(e: MouseEvent) {
 	background: transparent;
 	font-size: 1.5rem;
 	line-height: 1;
-	color: #666;
+	color: var(--muted);
 	cursor: pointer;
+
+	&:hover {
+		color: var(--text-h);
+	}
 }
 
 .modal-body {
@@ -149,6 +162,6 @@ function onDialogClick(e: MouseEvent) {
 	justify-content: flex-end;
 	gap: 8px;
 	padding: 12px 20px;
-	border-top: 1px solid #eee;
+	border-top: 1px solid var(--divider);
 }
 </style>

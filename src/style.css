@@ -14,6 +14,32 @@
 	--spacing: 4px;
 	--z-connector: 2;
 
+	/* 圆角 */
+	--radius-sm: 6px;
+	--radius-md: 8px;
+	--radius-lg: 12px;
+	--radius-pill: 999px;
+
+	/* 表面层 / 分隔线 */
+	--surface: #fff;
+	--surface-2: #f6f6f7;
+	--divider: #eee;
+	--muted: #999;
+	--accent-hover: #9129d6;
+
+	/* 语义色 */
+	--danger: #e74c3c;
+	--danger-bg: #fdf2f2;
+	--danger-border: #ffcdd2;
+	--success: #43a047;
+	--success-bg: #f1f9f1;
+	--success-border: #c8e6c9;
+	--info: #1e88e5;
+	--info-bg: #f2f8fe;
+	--info-border: #bbdefb;
+	--warning: #b45309;
+	--warning-bg: #fff3cd;
+
 	--content-max-width: 800px;
 	--content-padding: 30px;
 	--header-height: 60px;
@@ -54,6 +80,21 @@
 		--social-bg: rgba(47, 48, 58, 0.5);
 		--shadow: rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
 		--dotted-bg-color: #2a2c36;
+
+		--surface: #1c1d24;
+		--surface-2: #24252e;
+		--divider: #2e303a;
+		--muted: #8b8f9e;
+		--accent-hover: #a855f7;
+
+		--danger-bg: rgba(231, 76, 60, 0.14);
+		--danger-border: rgba(231, 76, 60, 0.4);
+		--success-bg: rgba(67, 160, 71, 0.14);
+		--success-border: rgba(67, 160, 71, 0.4);
+		--info-bg: rgba(30, 136, 229, 0.14);
+		--info-border: rgba(30, 136, 229, 0.4);
+		--warning: #fbbf24;
+		--warning-bg: rgba(217, 119, 6, 0.16);
 	}
 
 	#social .button-icon {
@@ -63,6 +104,15 @@
 
 * {
 	box-sizing: border-box;
+}
+
+/* 表单控件默认继承页面字体，避免各浏览器默认字体不一致 */
+button,
+input,
+textarea,
+select {
+	font: inherit;
+	color: inherit;
 }
 
 html, body {
@@ -91,7 +141,7 @@ h1, h2 {
 .full-horizon {
 	display: flex;
 	justify-content: center;
-	width: 100vw;
+	width: 100%;
 }
 
 /* 页面左右两侧（内容区外侧）的点状背景：
@@ -121,11 +171,134 @@ body::after {
 	right: 0;
 }
 
-@media (max-width: 800px) {
-	body::before,
-	body::after {
-		width: 20px;
-		background-size: 12px 12px;
-	}
+/* 通用页面框架：两侧竖向虚线（从 header 底部延伸到页面底部） */
+.page-frame {
+	position: relative;
+	overflow-x: hidden;
 }
 
+.page-frame::before,
+.page-frame::after {
+	content: "";
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	width: 1px;
+	background-image: var(--dashed-v);
+	background-repeat: repeat-y;
+	z-index: 0;
+	pointer-events: none;
+}
+
+.page-frame::before {
+	left: calc(50% - var(--content-max-width) / 2);
+}
+
+.page-frame::after {
+	right: calc(50% - var(--content-max-width) / 2);
+}
+
+/* 通用内容区：定宽居中，底部横虚线两端带方框连接器
+   --section-pad-y 可覆盖上下内边距 */
+.content-section {
+	position: relative;
+	width: 100%;
+	max-width: var(--content-max-width);
+	padding: var(--section-pad-y, var(--content-padding)) var(--content-padding);
+}
+
+.content-section::before,
+.content-section::after {
+	content: "";
+	position: absolute;
+	bottom: 0;
+	width: 12px;
+	height: 12px;
+	background-image: var(--connector);
+	background-repeat: no-repeat;
+	background-size: contain;
+	z-index: var(--z-connector);
+}
+
+.content-section::before {
+	left: 0;
+	translate: -50% 50%;
+}
+
+.content-section::after {
+	right: 0;
+	translate: 50% 50%;
+}
+
+/* 通用按钮 */
+.btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: 8px 18px;
+	font-size: 0.85rem;
+	font-weight: 500;
+	color: var(--text-h);
+	background: transparent;
+	border: 1px solid transparent;
+	border-radius: var(--radius-sm);
+	cursor: pointer;
+	text-decoration: none;
+	transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease,
+		transform 0.15s ease;
+}
+
+.btn:active:not(:disabled) {
+	transform: scale(0.97);
+}
+
+.btn:disabled {
+	opacity: 0.6;
+	cursor: not-allowed;
+}
+
+.btn--primary {
+	color: #fff;
+	background: var(--accent);
+	border-color: var(--accent);
+}
+
+.btn--primary:hover:not(:disabled) {
+	background: var(--accent-hover);
+	border-color: var(--accent-hover);
+}
+
+.btn--danger {
+	color: var(--danger);
+	border-color: var(--danger);
+}
+
+.btn--danger:hover:not(:disabled) {
+	color: #fff;
+	background: var(--danger);
+}
+
+.btn--accent {
+	color: var(--accent);
+	border-color: var(--accent);
+}
+
+.btn--accent:hover:not(:disabled) {
+	color: #fff;
+	background: var(--accent);
+}
+
+.btn--ghost {
+	color: var(--text);
+	background: var(--surface);
+	border-color: var(--border);
+}
+
+.btn--ghost:hover:not(:disabled) {
+	background: var(--surface-2);
+}
+
+.btn--lg {
+	padding: 12px 28px;
+	font-size: 0.95rem;
+}

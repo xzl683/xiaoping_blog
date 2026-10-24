@@ -11,9 +11,6 @@ export function useSearch() {
 		},
 		close: () => {
 			isOpen.value = false;
-		},
-		toggle: () => {
-			isOpen.value = !isOpen.value;
 		}
 	};
 }
