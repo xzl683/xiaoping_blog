@@ -8,7 +8,7 @@ import { useSearch } from '@/stores/search';
 import { highlight } from '@/utils/highlightKeyWord';
 
 const { isOpen, close } = useSearch();
-const { articles } = useArticleStore();
+const { articles, tags: existingTags } = useArticleStore();
 
 const keyword = ref('');
 /** 多选标签，默认 ['all']；all 与其他标签互斥 */
@@ -22,13 +22,7 @@ const activeTagSet = computed(() => new Set(selectedTags.value.filter(t => t !==
 const isAllSelected = computed(() => selectedTagSet.value.has('all'));
 
 /* ---------- 标签列表：从文章里动态收集 ---------- */
-const allTags = computed(() => {
-	const set = new Set<string>();
-	for (const art of articles.value) {
-		for (const t of art.tags ?? []) set.add(t);
-	}
-	return ['all', ...set];
-});
+const allTags = computed(() => ['all'].concat(existingTags.value));
 
 /* ---------- 点击标签：all 互斥，非 all 多选 ---------- */
 function toggleTag(t: string) {

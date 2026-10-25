@@ -1,0 +1,1010 @@
+# 链表 · 栈 · 队列
+
+## XCPC 数据结构专题课（提高向）
+
+> **授课**：广东工业大学 26 级技术部 · 数据结构组  
+> **对象**：26 级技术部新成员（已掌握 C++ 基础语法、数组、函数、递归、复杂度入门）  
+> **建议时长**：90 分钟（文末附 60 分钟精简版、2–3 人分工方案与 PPT 页面建议）  
+> **前置知识**：`struct`、数组、`vector`、BFS 基本思想、时间复杂度
+
+---
+
+## 0. 本讲目标
+
+学完这一讲，应该能做到：
+
+1. 用“逻辑结构—存储结构—操作”的统一视角理解链表、栈、队列，而不是背代码。
+2. 能手写**数组模拟**的单链表、双链表、循环队列、单调栈、单调队列，不依赖 STL。
+3. 掌握 XCPC 高频模型：**单调栈、单调队列、单调队列优化 DP、优先队列、双端队列 0-1 BFS、链式前向星**。
+4. 看到题目能判断该用哪种结构，并知道常见写法的坑。
+
+> **一句话记忆**
+>
+> - 链表：用“指针”换“位置”，插入删除 O(1)，查找 O(n)。
+> - 栈：后进先出，擅长处理“最近的相关性”。
+> - 队列：先进先出，擅长“按层/按时间顺序扩展”。
+
+---
+
+## 1. 讲课大纲（90 分钟）
+
+| 时间 | 内容 | 对应章节 | 讲授方式 |
+| --- | --- | --- | --- |
+| 0–5 min | 开场、课程地图、三种结构对比 | §2 | 讲授 + 提问 |
+| 5–25 min | 链表：数组模拟、双链表、链式前向星、约瑟夫 | §3 | 板书 + 现场代码 |
+| 25–50 min | 栈：括号、表达式、单调栈、最大子矩形 | §4 | 推演 + 模板 |
+| 50–75 min | 队列：BFS、循环队列、单调队列、优先队列 | §5 | 模板 + 例题 |
+| 75–85 min | 综合：互相模拟、选型决策 | §6 | 讨论 |
+| 85–90 min | 易错点清单、作业布置 | §7–§8 | 总结 |
+
+**60 分钟精简版**：开场 5 + 链表 15（只讲数组模拟、约瑟夫、链式前向星）+ 栈 20（括号、单调栈、最大子矩形）+ 队列 15（循环队列、单调队列、堆）+ 总结 5。  
+**可以砍掉的内容**：指针实现、STL `list` 细节、笛卡尔树、LRU、P2627 的推导细节。
+
+---
+
+## 2. 统一视角：三种结构到底在解决什么
+
+### 2.1 逻辑结构 vs 存储结构
+
+- **逻辑结构**：数据之间是什么关系。链表是“一个接一个”，栈是“后进先出”，队列是“先进先出”。
+- **存储结构**：在内存里怎么放。可以用指针，也可以用数组模拟。
+- **竞赛里真正重要的是操作复杂度**，不是“名字”。
+
+### 2.2 对比表
+
+| 结构 | 逻辑特点 | 常见存储 | 随机访问 | 插入/删除 | 典型场景 |
+| --- | --- | --- | --- | --- | --- |
+| 数组 | 连续、下标访问 | 连续内存 | O(1) | O(n) | 静态数据、前缀和 |
+| 链表 | 离散、靠指针连接 | 指针 / 数组模拟 | O(n) | O(1)（已知位置） | 频繁插入删除、邻接表 |
+| 栈 | LIFO | 数组 / STL | 只能看栈顶 | O(1) | 括号、表达式、单调栈、DFS |
+| 队列 | FIFO | 数组 / 循环队列 / `deque` | 只能看队首队尾 | O(1) | BFS、滑动窗口、任务调度 |
+
+### 2.3 STL 容器复杂度（要背）
+
+| 容器 | 随机访问 | 尾部插入 | 中间插入/删除 | 说明 |
+| --- | --- | --- | --- | --- |
+| `vector` | O(1) | 均摊 O(1) | O(n) | 最常用，缓存友好 |
+| `deque` | O(1) | 两端 O(1) | O(n) | 双端队列，常数比 `vector` 大 |
+| `list` | O(n) | O(1) | O(1)（已知迭代器） | 常数大，竞赛中少用 |
+| `stack` | 仅栈顶 | O(1) | — | 适配器，默认底层 `deque` |
+| `queue` | 仅队首 | O(1) | — | 适配器，默认底层 `deque` |
+| `priority_queue` | 仅堆顶 | O(log n) | — | 默认大根堆 |
+
+> **讲授提示**：先问一句“数组和链表，谁更快？”——答案取决于你要做什么操作。随机访问数组快，已知位置插入删除链表快；但链表常数大，实际竞赛里小数据甚至不如 `vector`。
+
+---
+
+## 3. 链表
+
+### 3.1 分类
+
+```text
+单链表：  head → [A] → [B] → [C] → NULL
+双链表：  NULL ← [A] ⇄ [B] ⇄ [C] → NULL
+循环链表：最后一个结点指回头结点
+```
+
+- **带头结点 / 不带头结点**：带头结点可以统一空表和非空表的操作，减少特判。
+- **静态链表**：用数组模拟，竞赛中最常用。
+
+### 3.2 指针实现（了解即可）
+
+```cpp
+struct Node {
+    int val;
+    Node *next;
+};
+```
+
+```cpp
+// 在 head 前插入
+Node* insertHead(Node* head, int x) {
+    return new Node{x, head};
+}
+
+// 删除 head 的后继
+void eraseAfter(Node* p) {
+    Node* q = p->next;
+    p->next = q->next;
+    delete q;
+}
+```
+
+> **为什么竞赛中几乎不用 `new/delete`**：频繁申请释放常数大、容易内存泄漏、调试困难，而且 OJ 上没必要。用数组模拟，代码更短、更快、更好调。
+
+### 3.3 数组模拟单链表（重点，必须会写）
+
+用 `e[]` 存值，`ne[]` 存下一个结点的下标，`idx` 是当前可用的新下标。
+
+```cpp
+const int N = 1e5 + 5;
+int head = -1;      // -1 表示空
+int e[N], ne[N], idx = 0;
+
+// 头插：O(1)
+void add_to_head(int x) {
+    e[idx] = x;
+    ne[idx] = head;
+    head = idx++;
+}
+
+// 在下标为 k 的结点后面插入 x：O(1)
+void insert_after(int k, int x) {
+    e[idx] = x;
+    ne[idx] = ne[k];
+    ne[k] = idx++;
+}
+
+// 删除下标为 k 的结点的后继：O(1)
+void erase_after(int k) {
+    ne[k] = ne[ne[k]];
+}
+
+// 遍历
+for (int i = head; i != -1; i = ne[i]) {
+    cout << e[i] << ' ';
+}
+```
+
+**要点**：
+
+- `head` 存的是下标，不是值。
+- 头插的本质是“新结点指向旧头，头指针移到新结点”。
+- 删除 `k` 的后继只需跳过它，不需要真的释放内存。
+- 想删除头结点要单独处理：`head = ne[head];`。
+
+### 3.4 数组模拟双链表（哨兵写法）
+
+用 0 和 1 作为左右哨兵，省掉大量边界判断。
+
+```cpp
+const int N = 1e5 + 5;
+int l[N], r[N], e[N], idx;
+
+void init() {
+    r[0] = 1;   // 0 是左哨兵
+    l[1] = 0;   // 1 是右哨兵
+    idx = 2;
+}
+
+// 在下标 k 的右边插入 x
+void insert_right(int k, int x) {
+    e[idx] = x;
+    l[idx] = k;
+    r[idx] = r[k];
+    l[r[k]] = idx;
+    r[k] = idx++;
+}
+
+// 在下标 k 的左边插入 x
+void insert_left(int k, int x) {
+    insert_right(l[k], x);
+}
+
+// 删除下标 k
+void erase(int k) {
+    r[l[k]] = r[k];
+    l[r[k]] = l[k];
+}
+```
+
+**建议画图顺序**：先连新结点的左右，再改邻居的指针，最后改 `k` 的右指针。顺序写错就会断链。
+
+### 3.5 STL `list`（知道即可）
+
+```cpp
+list<int> L;
+L.push_back(1);
+L.push_front(2);
+L.splice(L.begin(), L, it); // 把 it 移到头部，O(1)
+L.sort();                   // 链表专用排序
+L.unique();                 // 去重（相邻）
+```
+
+- 优点：`splice`、`merge` 是 O(1)，适合“区间搬移”。
+- 缺点：不支持随机访问，常数大，竞赛中一般用数组模拟。
+- **迭代器失效**：`erase` 后只有被删元素的迭代器失效；`vector` 扩容会导致全部失效。
+
+### 3.6 链式前向星（图的邻接表，图论前置）
+
+本质是“用数组模拟多条链表”，每条链表是一个点的出边集合。
+
+```cpp
+const int N = 1e5 + 5, M = 2e5 + 5;
+int head[N], ver[M], nxt[M], w[M], tot;
+
+void add(int u, int v, int ww) {
+    ver[++tot] = v;
+    w[tot] = ww;
+    nxt[tot] = head[u];
+    head[u] = tot;
+}
+
+// 遍历 u 的所有出边
+for (int i = head[u]; i; i = nxt[i]) {
+    int v = ver[i], ww = w[i];
+    // ...
+}
+```
+
+> **讲授提示**：这里一定要强调“`head[u]` 是链表头，`nxt` 是 next”，和单链表完全同构。图论课讲最短路时就不需要重新学邻接表了。
+
+### 3.7 经典模型
+
+#### （1）约瑟夫问题
+
+- 题意：`n` 个人围成一圈，报数到 `m` 的人出列，求**出列顺序**。  
+  题：[P1996 约瑟夫问题](https://www.luogu.com.cn/problem/P1996)
+- 做法：数组模拟循环链表，`ne[i]` 指向下一个人，按题意模拟即可，复杂度 O(nm)。
+
+```cpp
+// 简化演示：0..n-1 的循环链表，输出出列顺序
+const int N = 1e5 + 5;
+int ne[N];
+for (int i = 0; i < n; ++i) ne[i] = (i + 1) % n;
+int pre = n - 1, cur = 0;
+for (int cnt = 0; cnt < n; ++cnt) {
+    for (int step = 1; step < m; ++step) { // 报数 m-1 次
+        pre = cur;
+        cur = ne[cur];
+    }
+    cout << cur + 1 << ' ';
+    ne[pre] = ne[cur]; // 删除 cur
+    cur = ne[cur];
+}
+```
+
+> 如果**只求最后剩下的那个人**，有 O(n) 递推：`f(1)=0`，`f(i)=(f(i-1)+m)%i`，答案 `f(n)+1`。但这不能输出出列顺序，P1996 需要模拟。
+
+#### （2）队列安排
+
+- 题：[P1160 队列安排](https://www.luogu.com.cn/problem/P1160)
+- 模型：双链表 + 记录每个同学对应的结点下标。
+- 操作 1：把 `i` 插到 `k` 左边/右边；操作 2：删除 `k`。
+- 学生编号是 `1..n`，不要直接用 0/1 当哨兵；可以用 `n+1`、`n+2` 作为左右哨兵，最后从 `r[n+1]` 走到 `n+2` 输出。
+
+#### （3）LRU 缓存（链表 + 哈希）
+
+- 模型：双链表存访问顺序，`unordered_map` 存 key 到结点迭代器的映射。
+- `get`：命中就移到头部；`put`：更新/插入到头部，超容量就删尾部。
+- 用 `list::splice` 可以 O(1) 移动结点。
+
+#### （4）链表反转（拓展）
+
+```cpp
+Node* reverse(Node* head) {
+    Node *pre = nullptr, *cur = head;
+    while (cur) {
+        Node* nxt = cur->next;
+        cur->next = pre;
+        pre = cur;
+        cur = nxt;
+    }
+    return pre;
+}
+```
+
+### 3.8 链表易错点
+
+1. 删除后没有改前驱的 `next`，导致断链。
+2. 数组模拟时 `idx` 从 0 还是 1 开始不统一，`head=-1` 与 `head=0` 混用。
+3. 双链表插入顺序写错，先改了邻居指针，丢掉了原来的 `next`。
+4. 删除头结点没有特判。
+5. 用 `new` 后忘记 `delete`，多组数据反复申请导致内存暴涨。
+6. 链表题里用 `vector` 做中间插入，复杂度退化到 O(n²)。
+
+---
+
+## 4. 栈
+
+### 4.1 栈的实现
+
+```cpp
+const int N = 1e5 + 5;
+int stk[N], top = 0;
+
+void push(int x) { stk[++top] = x; }   // top 指向栈顶元素
+int pop() { return stk[top--]; }
+int query() { return stk[top]; }
+bool empty() { return top == 0; }
+```
+
+STL 版：
+
+```cpp
+stack<int> st;
+st.push(1);
+st.top();
+st.pop();
+st.size();
+st.empty();
+```
+
+> `stack` 没有 `clear()`、没有迭代器。多组数据时直接重新声明或赋空栈：`st = stack<int>();`
+
+### 4.2 括号匹配
+
+题：[P1739 表达式括号匹配](https://www.luogu.com.cn/problem/P1739)
+
+```cpp
+bool check(const string& s) {
+    stack<char> st;
+    for (char c : s) {
+        if (c == '(' || c == '[' || c == '{') {
+            st.push(c);
+        } else if (c == ')' || c == ']' || c == '}') {
+            if (st.empty()) return false;
+            char t = st.top();
+            if ((c == ')' && t != '(') ||
+                (c == ']' && t != '[') ||
+                (c == '}' && t != '{')) return false;
+            st.pop();
+        }
+    }
+    return st.empty();
+}
+```
+
+**核心**：右括号必须和**最近一个未匹配的左括号**配对，这正是 LIFO 的意义。
+
+### 4.3 后缀表达式
+
+题：[P1449 后缀表达式](https://www.luogu.com.cn/problem/P1449)（数字和运算符用 `.` 分隔，`@` 结束）
+
+```cpp
+string s;
+cin >> s;
+stack<long long> st;
+long long num = 0;
+for (char c : s) {
+    if (isdigit(c)) {
+        num = num * 10 + (c - '0');
+    } else if (c == '.') {
+        st.push(num);
+        num = 0;
+    } else if (c == '@') {
+        break;
+    } else {
+        long long b = st.top(); st.pop();
+        long long a = st.top(); st.pop();
+        if (c == '+') st.push(a + b);
+        else if (c == '-') st.push(a - b);
+        else if (c == '*') st.push(a * b);
+        else st.push(a / b);
+    }
+}
+cout << st.top() << '\n';
+```
+
+**注意**：先弹出的是右操作数 `b`，后弹出的是左操作数 `a`，所以是 `a - b`、`a / b`，顺序反了就会算错。
+
+### 4.4 中缀表达式求值（双栈法）
+
+题：[P1981 表达式求值](https://www.luogu.com.cn/problem/P1981)（只有 `+`、`*`、括号，对 10000 取模）
+
+思路：一个数字栈，一个符号栈。
+
+- 遇到数字：入数字栈。
+- 遇到 `(`：入符号栈。
+- 遇到 `)`：不断弹出符号栈顶并计算，直到遇到 `(`。
+- 遇到运算符：只要栈顶运算符优先级 **不低于** 当前运算符，就先算栈顶；算完再入栈。
+- 扫完后把符号栈清空。
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+const int MOD = 10000;
+stack<long long> num;
+stack<char> op;
+
+void calc() {
+    long long b = num.top(); num.pop();
+    long long a = num.top(); num.pop();
+    char c = op.top(); op.pop();
+    if (c == '+') num.push((a + b) % MOD);
+    else num.push(a * b % MOD);
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    string s;
+    cin >> s;
+
+    for (int i = 0; i < (int)s.size(); ++i) {
+        if (isdigit(s[i])) {
+            long long x = 0;
+            while (i < (int)s.size() && isdigit(s[i])) {
+                x = x * 10 + (s[i++] - '0');
+            }
+            --i;
+            num.push(x % MOD);
+        } else if (s[i] == '(') {
+            op.push('(');
+        } else if (s[i] == ')') {
+            while (op.top() != '(') calc();
+            op.pop();
+        } else {
+            while (!op.empty() && op.top() != '(') {
+                char t = op.top();
+                bool higher_or_equal =
+                    (s[i] == '+' && (t == '+' || t == '*')) ||
+                    (s[i] == '*' && t == '*');
+                if (!higher_or_equal) break;
+                calc();
+            }
+            op.push(s[i]);
+        }
+    }
+    while (!op.empty()) calc();
+    cout << num.top() % MOD << '\n';
+    return 0;
+}
+```
+
+> 进阶题：[P1175 表达式的转换](https://www.luogu.com.cn/problem/P1175)（中缀转后缀并求值），可以留作挑战。
+
+### 4.5 单调栈（XCPC 高频，重点）
+
+**模型**：求每个元素**左边/右边第一个比它大/小**的位置。
+
+**核心**：栈内维护一个单调序列，新元素入栈前，把“不可能再成为答案”的元素弹掉。
+
+#### 求右边第一个严格大于（从左往右扫）
+
+```cpp
+// a[1..n]，ans[i] = 右边第一个严格大于 a[i] 的下标，不存在为 0
+int stk[N], top = 0, ans[N];
+
+for (int i = 1; i <= n; ++i) {
+    while (top && a[stk[top]] < a[i]) {
+        ans[stk[top]] = i;   // i 就是栈顶元素右边第一个更大值
+        --top;
+    }
+    stk[++top] = i;
+}
+```
+
+#### 求右边第一个严格大于（从右往左扫，P5788 常用写法）
+
+题：[P5788 【模板】单调栈](https://www.luogu.com.cn/problem/P5788) 的常见写法：
+
+```cpp
+for (int i = n; i >= 1; --i) {
+    while (top && a[stk[top]] <= a[i]) --top;
+    ans[i] = top ? stk[top] : 0;
+    stk[++top] = i;
+}
+```
+
+#### 求左边第一个严格大于（从左往右扫）
+
+```cpp
+for (int i = 1; i <= n; ++i) {
+    while (top && a[stk[top]] <= a[i]) --top;
+    L[i] = top ? stk[top] : 0;   // 左边第一个严格更大
+    stk[++top] = i;
+}
+```
+
+> 三种写法只差两件事：**扫描方向决定“左边/右边”**，比较符号决定“严格/非严格”。记不清时，画 3 个元素的例子手推一遍。
+
+**为什么是 O(n)**：每个下标最多入栈一次、出栈一次，总操作次数 O(n)。
+
+**严格 vs 非严格**：
+
+- 求“第一个严格大于”：弹 `<=`（这样相等元素不会成为答案）；求“大于等于”：弹 `<`。
+- **建议存下标**，不要只存值，便于计算距离和答案。
+
+#### 例题
+
+| 题目 | 考点 | 关键点 |
+| --- | --- | --- |
+| [P1901 发射站](https://www.luogu.com.cn/problem/P1901) | 左右第一个更高 | 分别从左、从右跑两遍单调栈，注意相等时不能互相接收 |
+| [P2866 Bad Hair Day S](https://www.luogu.com.cn/problem/P2866) | 右边第一个更高 | 统计每个元素被弹出的距离/个数 |
+| [P5788 单调栈](https://www.luogu.com.cn/problem/P5788) | 模板 | 存下标，输出位置 |
+| [LC 739 每日温度](https://leetcode.cn/problems/daily-temperatures/) | 下一个更高温度 | 与 P5788 同模型 |
+
+#### 最大子矩形（单调栈经典应用）
+
+题：[P4147 玉蟾宫](https://www.luogu.com.cn/problem/P4147)、[P1950 长方形](https://www.luogu.com.cn/problem/P1950)
+
+思路：
+
+1. 逐行处理，维护每列向上连续的 `1` 的高度 `h[j]`。
+2. 对每一行的高度数组，求“以每根柱子为高的最大矩形”，即左右第一个更矮的柱子。
+3. 用单调栈 O(m) 求出左右边界，总复杂度 O(nm)。
+
+```cpp
+// 传入 0-indexed 的高度数组，返回直方图最大矩形面积
+long long maxRect(vector<int> h) {
+    h.insert(h.begin(), 0);
+    h.push_back(0);            // 两端加 0，省去清栈特判
+    int m = h.size() - 2;
+    stack<int> st;
+    st.push(0);
+    long long ans = 0;
+    for (int i = 1; i <= m + 1; ++i) {
+        while (h[st.top()] > h[i]) {
+            int H = h[st.top()];
+            st.pop();
+            int L = st.top() + 1;
+            int R = i - 1;
+            ans = max(ans, 1LL * H * (R - L + 1));
+        }
+        st.push(i);
+    }
+    return ans;
+}
+```
+
+> **对比悬线法**：悬线法也是 O(nm)，思路是“枚举上边界 + 左右扩展”；单调栈更通用，写法更短。两种都要会一种，另一种听得懂即可。
+
+#### 拓展：笛卡尔树
+
+用单调栈可以在 O(n) 内建出笛卡尔树：每个结点是区间最值，中序遍历是原序列。它是“单调栈 + 树形结构”的结合，了解即可。
+
+### 4.6 栈的构造题
+
+#### （1）合法出栈序列判定
+
+给定入栈顺序 `1..n` 和一个出栈序列，判断是否合法：用一个栈模拟，能匹配就弹出，最后栈空则合法。
+
+#### （2）出栈序列计数
+
+题：[P1044 栈](https://www.luogu.com.cn/problem/P1044)（Catalan 数）
+
+```cpp
+long long f[25] = {1};
+for (int i = 1; i <= n; ++i)
+    for (int j = 0; j < i; ++j)
+        f[i] += f[j] * f[i - 1 - j];
+cout << f[n] << '\n';
+```
+
+#### （3）两个栈实现队列
+
+```cpp
+stack<int> in, out;
+
+void push(int x) { in.push(x); }
+
+int pop() {
+    if (out.empty()) {
+        while (!in.empty()) {
+            out.push(in.top());
+            in.pop();
+        }
+    }
+    int x = out.top();
+    out.pop();
+    return x;
+}
+```
+
+- 入队 O(1)，出队**均摊 O(1)**：每个元素最多被搬运一次。
+- 这是“用两个后进先出模拟先进先出”的经典构造。
+
+### 4.7 栈易错点
+
+1. 空栈时调用 `top()` / 弹出，RE。
+2. 单调栈存了值而不是下标，算距离时出错。
+3. 相等元素到底弹不弹，取决于题目要“严格”还是“非严格”。
+4. 表达式求值先弹 `b` 再弹 `a`，写成 `b-a` 就错了。
+5. 取模题中间结果用 `int` 溢出，统一 `long long`。
+6. `stack` 没有 `clear()`，多组数据忘记清空。
+
+---
+
+## 5. 队列
+
+### 5.1 队列的实现
+
+STL：
+
+```cpp
+queue<int> q;
+q.push(1);
+q.front();
+q.pop();
+q.size();
+q.empty();
+```
+
+**循环队列**（数组模拟，避免队首不断后移导致空间浪费）：
+
+```cpp
+const int N = 1e5 + 5;
+int q[N], head = 0, tail = 0;
+
+bool empty() { return head == tail; }
+bool full() { return (tail + 1) % N == head; } // 牺牲一个空位
+void push(int x) { q[tail] = x; tail = (tail + 1) % N; }
+int front() { return q[head]; }
+void pop() { head = (head + 1) % N; }
+int size() { return (tail - head + N) % N; }
+```
+
+> **为什么要循环**：普通数组队列每次 `pop` 只移动 `head`，`tail` 一直往后走，很快就越界；取模后空间可以重复利用。
+
+### 5.2 BFS 与队列
+
+```cpp
+vector<int> dist(n + 1, -1);
+queue<int> q;
+dist[s] = 0;
+q.push(s);
+
+while (!q.empty()) {
+    int u = q.front();
+    q.pop();
+    for (int v : g[u]) {
+        if (dist[v] == -1) {
+            dist[v] = dist[u] + 1;
+            q.push(v);
+        }
+    }
+}
+```
+
+常见变体：
+
+- **多源 BFS**：把所有源点先入队，`dist=0`。
+- **分层 BFS**：一次取出当前队列大小 `sz`，处理完这一层再进入下一层。
+- **状态 BFS**：队列里存 `struct` 或编码后的状态（如迷宫坐标 + 钥匙状态）。
+
+练习：[P1443 马的遍历](https://www.luogu.com.cn/problem/P1443)、[P1135 奇怪的电梯](https://www.luogu.com.cn/problem/P1135)。
+
+### 5.3 双端队列 `deque` 与 0-1 BFS
+
+`deque` 支持两端 O(1) 插入删除：
+
+```cpp
+deque<int> dq;
+dq.push_back(1);
+dq.push_front(2);
+dq.pop_back();
+dq.pop_front();
+dq.front();
+dq.back();
+```
+
+**0-1 BFS**：边权只有 0 和 1 时，用 `deque` 代替堆：
+
+- 边权为 0：把新点放到**队首**（不增加距离，优先处理）。
+- 边权为 1：把新点放到**队尾**。
+
+```cpp
+vector<int> dist(n + 1, 1e9);
+vector<bool> vis(n + 1, false);
+deque<int> dq;
+dist[s] = 0;
+dq.push_back(s);
+
+while (!dq.empty()) {
+    int u = dq.front();
+    dq.pop_front();
+    if (vis[u]) continue;
+    vis[u] = true;
+
+    for (auto [v, w] : g[u]) {
+        if (dist[v] > dist[u] + w) {
+            dist[v] = dist[u] + w;
+            if (w == 0) dq.push_front(v);
+            else dq.push_back(v);
+        }
+    }
+}
+```
+
+复杂度 O(V + E)，比堆优化的 Dijkstra 少一个 `log`。
+
+### 5.4 单调队列（滑动窗口最值，重点）
+
+**模型**：长度为 `k` 的窗口在数组上滑动，求每个窗口的最大/最小值。
+
+题：[P1886 滑动窗口 /【模板】单调队列](https://www.luogu.com.cn/problem/P1886)
+
+```cpp
+// 求每个长度为 k 的窗口的最小值，q 存下标
+int q[N], h = 1, t = 0;
+
+for (int i = 1; i <= n; ++i) {
+    while (h <= t && q[h] <= i - k) ++h;      // 队首过期
+    while (h <= t && a[q[t]] >= a[i]) --t;    // 维护递增
+    q[++t] = i;
+    if (i >= k) cout << a[q[h]] << ' ';
+}
+```
+
+求最大值只需把 `>=` 改成 `<=`。
+
+**和单调栈的区别**：
+
+| 结构 | 解决的问题 | 方向 | 是否过期 |
+| --- | --- | --- | --- |
+| 单调栈 | 左/右第一个更大/更小 | 单侧 | 不涉及窗口 |
+| 单调队列 | 窗口内的最值 | 两端 | 需要按窗口左边界弹出 |
+
+**易错点**：
+
+- 存值不存下标，窗口过期时不知道弹谁。
+- 先入队再弹过期，或先弹过期再入队，顺序不对。
+- 窗口大小是 `k`，过期条件是 `q[h] <= i - k`（闭区间 `[i-k+1, i]`）。
+
+练习：[P1440 求 m 区间内的最小值](https://www.luogu.com.cn/problem/P1440)、[P2032 扫描](https://www.luogu.com.cn/problem/P2032)。
+
+### 5.5 单调队列优化 DP（提高）
+
+**模型**：
+
+$$
+f[i] = \max_{j \in [i-R,\ i-L]} f[j] + a[i]
+$$
+
+如果直接枚举 `j`，复杂度 O(nR)。把 `f[j]` 放进一个**下标窗口**为 `[i-R, i-L]` 的单调队列，取队首即最大值，复杂度降到 O(n)。
+
+**例题**：[P1725 琪露诺](https://www.luogu.com.cn/problem/P1725)
+
+- 每个位置有冰冻指数 `a[i]`，从 `i` 可以跳到 `[i+L, i+R]`，跳到或跳过 `n` 结束，求最大和。
+- 转移：`f[i] = a[i] + max(f[j])`，其中 `j ∈ [i-R, i-L]`。
+
+```cpp
+// a[0..n] 存每个位置的冰冻指数，L、R 为一次跳跃的最小/最大距离
+const long long NEG = -1e18;
+vector<long long> f(n + 1, NEG);
+int q[N], h = 1, t = 0;
+
+f[0] = 0;
+for (int i = 1; i <= n; ++i) {
+    // 新候选 j = i - L 入队
+    if (i - L >= 0) {
+        while (h <= t && f[q[t]] <= f[i - L]) --t;
+        q[++t] = i - L;
+    }
+    // 过期候选 j < i - R 出队
+    while (h <= t && q[h] < i - R) ++h;
+
+    if (h <= t) f[i] = f[q[h]] + a[i];
+}
+
+long long ans = NEG;
+for (int i = max(0, n - R + 1); i <= n; ++i)
+    ans = max(ans, f[i]);
+cout << ans << '\n';
+```
+
+> **顺序口诀**：先加入新候选 `i-L`，再弹过期 `i-R`，最后取队首。  
+> **注意下标**：`i-L` 必须已经算过，所以循环从 1 开始、`f[0]=0` 初始化。边界答案取决于“跳到或跳过 n”的题意，按题目调整。
+
+**进阶练习**：[P2627 Mowing the Lawn G](https://www.luogu.com.cn/problem/P2627)
+
+- 设 `s` 为前缀和，`f[i]` 表示前 `i` 头牛的最大效率。
+- 关键是把“最后一段的起点 `j`”作为休息点，转移中出现 `f[j] - s[j]`，用单调队列维护这个量的最大值。
+- 建议先自己推 20 分钟，再对题解。
+
+### 5.6 优先队列（堆）
+
+```cpp
+priority_queue<int> big;                                  // 大根堆
+priority_queue<int, vector<int>, greater<int>> small;     // 小根堆
+```
+
+自定义比较器（注意：和 `sort` 的写法**相反**）：
+
+```cpp
+struct Node { int x; };
+struct cmp {
+    bool operator()(const Node& a, const Node& b) {
+        return a.x > b.x; // 小根堆（x 小的优先）
+    }
+};
+priority_queue<Node, vector<Node>, cmp> pq;
+```
+
+**必会模型**：
+
+| 题目 | 模型 | 关键点 |
+| --- | --- | --- |
+| [P3378 【模板】堆](https://www.luogu.com.cn/problem/P3378) | 堆模板 | 插入、取最小、删除最小 |
+| [P1090 合并果子](https://www.luogu.com.cn/problem/P1090) | 贪心 + 小根堆 | 每次取最小的两个合并 |
+| [P1631 序列合并](https://www.luogu.com.cn/problem/P1631) | 多路归并 | 初始把 `a[i]+b[1]` 入堆，弹出后补 `b[j+1]` |
+| [P4053 建筑抢修](https://www.luogu.com.cn/problem/P4053) | 反悔贪心 | 按截止时间排序，超时就把耗时最长的任务踢掉 |
+| [P1168 中位数](https://www.luogu.com.cn/problem/P1168) | 对顶堆 | 大根堆存较小一半，小根堆存较大一半 |
+
+**对顶堆模板**：
+
+```cpp
+priority_queue<int> low;                              // 较小的一半，大根堆
+priority_queue<int, vector<int>, greater<int>> high;  // 较大的一半，小根堆
+
+void add(int x) {
+    if (low.empty() || x <= low.top()) low.push(x);
+    else high.push(x);
+
+    if (low.size() > high.size() + 1) {
+        high.push(low.top());
+        low.pop();
+    }
+    if (high.size() > low.size()) {
+        low.push(high.top());
+        high.pop();
+    }
+}
+
+int median() { return low.top(); } // 始终保证 low.size() == high.size() 或 +1
+```
+
+### 5.7 队列易错点
+
+1. `queue` 没有 `clear()`，多组数据忘记重建。
+2. 循环队列 `full()` 判断写错，覆盖未处理数据。
+3. 单调队列存值不存下标，过期逻辑失效。
+4. `priority_queue` 的 `cmp` 写反，把大根堆写成了小根堆。
+5. BFS 忘记标记起点，或重复入队导致复杂度爆炸。
+6. 0-1 BFS 用普通 `queue`，做法直接失效。
+
+---
+
+## 6. 三者的联系与选型
+
+### 6.1 互相模拟
+
+| 目标 | 做法 | 复杂度 |
+| --- | --- | --- |
+| 两个栈 → 队列 | `in` 负责入，`out` 负责出，空了再倒 | 均摊 O(1) |
+| 两个队列 → 栈 | 入队到 `q1`；出栈时把 `q1` 前 `size-1` 个移到 `q2`，弹出最后一个，再换回 | 出栈 O(n) |
+| `deque` → 栈 | 只用 `push_back` / `pop_back` | O(1) |
+| `deque` → 队列 | 只用 `push_back` / `pop_front` | O(1) |
+
+### 6.2 选型决策
+
+```text
+需要随机访问 + 尾部操作        → vector
+需要两端插入删除                → deque
+需要频繁在已知位置插入/删除     → 链表（数组模拟）
+需要后进先出                    → stack / 数组栈
+需要先进先出 / BFS              → queue / 循环队列
+需要动态最值                    → 单调队列 / 优先队列
+需要左右第一个更大/更小         → 单调栈
+需要边权 0/1 的最短路           → deque + 0-1 BFS
+```
+
+> **讲授提示**：让学生用一句话回答“看到什么关键词想到什么结构”。例如：  
+> “下一个更大” → 单调栈；“滑动窗口最值” → 单调队列；“每次取最小” → 小根堆；“按层扩展” → 队列。
+
+---
+
+## 7. 易错点总清单
+
+- [ ] 数组模拟链表：`head`、`idx` 的初值和含义是否统一？
+- [ ] 双链表插入：先连新结点，再改邻居，顺序是否画图确认？
+- [ ] 删除结点后，是否还有地方会访问它？
+- [ ] 单调栈：题目要严格还是非严格？存的是下标还是值？
+- [ ] 单调队列：过期条件、入队与取值的顺序是否正确？
+- [ ] 表达式求值：左右操作数是否弹反？
+- [ ] `priority_queue`：`cmp` 是否和 `sort` 写反了？
+- [ ] BFS：起点是否标记？多组数据是否清空 `dist` 和队列？
+- [ ] 循环队列：`full` 判断是否牺牲了一个空位？
+- [ ] 所有答案和中间量是否可能超过 `int`？
+
+---
+
+## 8. 课后练习（分层）
+
+### 必做（基础，下一次课检查）
+
+| 题号 | 题目 | 考点 |
+| --- | --- | --- |
+| [P1996](https://www.luogu.com.cn/problem/P1996) | 约瑟夫问题 | 数组模拟循环链表 |
+| [P1160](https://www.luogu.com.cn/problem/P1160) | 队列安排 | 双链表 + 哨兵 |
+| [P1739](https://www.luogu.com.cn/problem/P1739) | 表达式括号匹配 | 栈 |
+| [P1449](https://www.luogu.com.cn/problem/P1449) | 后缀表达式 | 栈 + 解析 |
+| [P5788](https://www.luogu.com.cn/problem/P5788) | 【模板】单调栈 | 单调栈 |
+| [P1886](https://www.luogu.com.cn/problem/P1886) | 滑动窗口 | 单调队列 |
+| [P1540](https://www.luogu.com.cn/problem/P1540) | 机器翻译 | 队列模拟 |
+
+### 进阶（两周内完成）
+
+| 题号 | 题目 | 考点 |
+| --- | --- | --- |
+| [P1901](https://www.luogu.com.cn/problem/P1901) | 发射站 | 左右第一个更高 |
+| [P2866](https://www.luogu.com.cn/problem/P2866) | Bad Hair Day S | 单调栈计数 |
+| [P4147](https://www.luogu.com.cn/problem/P4147) | 玉蟾宫 | 单调栈 + 最大子矩形 |
+| [P1440](https://www.luogu.com.cn/problem/P1440) | 求 m 区间内的最小值 | 单调队列 |
+| [P1044](https://www.luogu.com.cn/problem/P1044) | 栈 | Catalan / 区间 DP |
+| [P1631](https://www.luogu.com.cn/problem/P1631) | 序列合并 | 优先队列 |
+| [P1168](https://www.luogu.com.cn/problem/P1168) | 中位数 | 对顶堆 |
+
+### 挑战（学有余力）
+
+| 题号 | 题目 | 考点 |
+| --- | --- | --- |
+| [P1725](https://www.luogu.com.cn/problem/P1725) | 琪露诺 | 单调队列优化 DP |
+| [P2627](https://www.luogu.com.cn/problem/P2627) | Mowing the Lawn G | 单调队列优化 DP |
+| [P4053](https://www.luogu.com.cn/problem/P4053) | 建筑抢修 | 反悔贪心 + 堆 |
+| [P1950](https://www.luogu.com.cn/problem/P1950) | 长方形 | 单调栈计数 |
+| [P1175](https://www.luogu.com.cn/problem/P1175) | 表达式的转换 | 中缀转后缀 |
+
+> 建议提交时统一使用 C++17，开启 `-O2`，并在代码开头加：
+>
+> ```cpp
+> ios::sync_with_stdio(false);
+> cin.tie(nullptr);
+> ```
+
+---
+
+## 9. 备课与讲授建议
+
+### 9.1 2–3 人分工
+
+**方案 A（按结构切）**
+
+- A：链表 + 链式前向星 + 约瑟夫。
+- B：栈 + 表达式 + 单调栈。
+- C：队列 + BFS + 单调队列 + 优先队列。
+- 最后 10 分钟由主讲人串“选型决策”。
+
+**方案 B（按“概念 / 模板 / 例题”切）**
+
+- 每人负责一个结构的“概念 + 模板 + 1 道例题”，主讲人负责开场和总结。
+- 适合每个人都想上台讲一段的情况。
+
+**执行建议**
+
+- 提前把模板代码跑通，现场直接演示，不要现场 debug。
+- 一人控屏、一人讲、一人答疑；提前对一遍时间。
+- 每讲完一个结构，留 1–2 分钟让听众在纸上写关键操作。
+
+### 9.2 互动问题
+
+1. 数组模拟链表为什么不用 `new`？
+2. 单调栈为什么是 O(n)？每个元素最多进、出栈几次？
+3. 滑动窗口的队首什么时候过期？为什么存下标而不是存值？
+4. `priority_queue` 的 `cmp` 为什么和 `sort` 相反？
+5. 两个栈实现队列，为什么出队是均摊 O(1)？
+6. 0-1 BFS 中，边权为 0 的点为什么放队首？
+
+### 9.3 PPT / 板书页面建议
+
+1. 封面 + 课程地图
+2. 三种结构对比表
+3. 链表分类（单/双/循环）
+4. 数组模拟单链表
+5. 双链表与哨兵
+6. 链式前向星
+7. 约瑟夫 / 队列安排
+8. 栈：括号匹配 + 表达式
+9. 单调栈模板
+10. 最大子矩形
+11. 队列与 BFS
+12. 单调队列
+13. 单调队列优化 DP
+14. 优先队列 / 对顶堆
+15. 总结 + 作业
+
+### 9.4 参考时间分配（90 分钟）
+
+- 0–5：开场
+- 5–25：链表
+- 25–50：栈
+- 50–75：队列
+- 75–85：综合与选型
+- 85–90：易错点 + 作业
+
+---
+
+## 10. 参考资料
+
+- OI Wiki · 数据结构目录：<https://oi-wiki.org/ds/>  
+  重点页面：链表、栈、队列、单调栈、单调队列、堆。
+- 洛谷题库：<https://www.luogu.com.cn/problem/list>
+- 本讲所有例题均可在洛谷按题号搜索。
+- 建议配合 OI Wiki 的“单调栈”“单调队列”页面，对照本讲模板复习。
+
+---
+
+> **最后一句**：这三种结构本身不难，难的是**识别题目里的模型**。下次看到“下一个更大”“窗口最值”“按层扩展”“最近匹配”，先想今天这三样工具。

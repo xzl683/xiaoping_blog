@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { computed } from 'vue';
 import Article from '@/core/Article';
 import TagSelector from '@/components/SettingView/TagSelector.vue';
 import { useArticleStore } from '@/stores/articles';
 import { useArticleForm } from '@/composables/useArticleForm';
+import { config } from '@/config';
 
 const props = defineProps<{
 	/** 传入文章表示编辑，否则为新建 */
@@ -15,21 +15,11 @@ const emit = defineEmits<{
 	(e: 'saved'): void;
 }>();
 
-const { articles } = useArticleStore();
-const { form, errors, submitting, onSubmit, resetForm } = useArticleForm(() => props.article ?? null);
+const { tags } = useArticleStore();
+const { form, errors, submitting, onSubmit, resetForm } = useArticleForm(props.article ?? null);
 
-const maxSummaryLength = Article.maxSummaryLength;
-
-/* ---------- 全部已有标签（去重），供下拉选择 ---------- */
-const existingTags = computed(() => {
-	const set = new Set<string>();
-	for (const art of articles.value)
-		for (const tag of art.tags) set.add(tag);
-	return [...set];
-});
-
-async function handleSubmit() {
-	const ok = await onSubmit();
+function handleSubmit() {
+	const ok = onSubmit();
 	if (ok && props.article) emit('saved');
 }
 </script>
@@ -73,7 +63,7 @@ async function handleSubmit() {
 		<!-- 标签 -->
 		<div class="field">
 			<label>标签</label>
-			<TagSelector v-model="form.tags" :suggestions="existingTags" />
+			<TagSelector v-model="form.tags" :suggestions="tags" />
 			<p class="hint">从已有标签中选择，或新建一个</p>
 		</div>
 
@@ -85,8 +75,9 @@ async function handleSubmit() {
 				v-model="form.summary"
 				class="form-input form-textarea"
 				rows="2"
-				:placeholder="`不填则自动截取正文前 ${maxSummaryLength} 字`"
+				:placeholder="`不填则自动截取正文前 ${config.summaryLen} 字`"
 			/>
+			<p v-if="errors.summary" class="error">{{ errors.summary }}</p>
 		</div>
 
 		<!-- 正文 -->

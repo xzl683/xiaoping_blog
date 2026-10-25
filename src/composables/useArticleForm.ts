@@ -1,8 +1,8 @@
-import { reactive, ref, toValue, watch, type MaybeRefOrGetter } from 'vue';
+import { reactive, ref } from 'vue';
 import { useArticleStore } from '@/stores/articles';
 import { useToast } from '@/stores/toast';
 import type Article from '@/core/Article';
-import type { InputArticleData } from '@/types';
+import { config } from '@/config';
 
 interface ArticleFormState {
 	title: string;
@@ -12,7 +12,7 @@ interface ArticleFormState {
 	content: string;
 }
 
-const emptyForm = (): ArticleFormState => ({
+const emptyForm = (): ArticleFormState => structuredClone({
 	title: '',
 	author: '',
 	summary: '',
@@ -20,38 +20,15 @@ const emptyForm = (): ArticleFormState => ({
 	content: '',
 });
 
-function snapshot(article: Article | null | undefined): ArticleFormState {
-	return article
-		? {
-				title: article.title,
-				author: article.author,
-				summary: article.summary ?? '',
-				tags: [...article.tags],
-				content: article.content,
-			}
-		: emptyForm();
-}
-
-const config = {
-	titleLen: 20,
-	authorLen: 20,
-	summaryLen: 80
-} as const;
-
 /**
  * 文章表单状态（工厂：每次调用产生独立状态）
  * source 传入文章表示编辑该文章，否则为新建；变化时自动重置表单
  */
-export const useArticleForm = (source: MaybeRefOrGetter<Article | null | undefined>) => {
+export const useArticleForm = (article: Article | null) => {
 	const { addArticle, updateArticle } = useArticleStore();
 	const toast = useToast();
 
-	let initial = snapshot(toValue(source));
-
-	const form = reactive<ArticleFormState>({
-		...initial,
-		tags: [...initial.tags],
-	});
+	const form = reactive<ArticleFormState>(article?.clone() ?? emptyForm());
 
 	const errors = reactive<Record<string, string>>({});
 	const submitting = ref(false);
@@ -60,26 +37,18 @@ export const useArticleForm = (source: MaybeRefOrGetter<Article | null | undefin
 		Object.keys(errors).forEach(k => delete errors[k]);
 	}
 
-	/** 用给定状态覆盖表单，并记录为重置基准 */
-	function resetTo(state: ArticleFormState) {
-		initial = { ...state, tags: [...state.tags] };
-		Object.assign(form, { ...state, tags: [...state.tags] });
-		clearErrors();
-	}
-
-	watch(
-		() => toValue(source),
-		article => resetTo(snapshot(article)),
-	);
-
 	/* ---------- 校验 ---------- */
 	function validate() {
 		clearErrors();
 
+		form.title   = form.title  .trim();
+		form.author  = form.author .trim();
+		form.content = form.content.trim();
+
 		const { title, author, summary, content } = form;
-		if (!title  .trim()) errors.title   = '标题不能为空';
-		if (!author .trim()) errors.author  = '作者不能为空';
-		if (!content.trim()) errors.content = '正文不能为空';
+		if (!title  ) errors.title   = '标题不能为空';
+		if (!author ) errors.author  = '作者不能为空';
+		if (!content) errors.content = '正文不能为空';
 
 		if(title  .length > config.titleLen  ) errors.title   = `标题不能超过${config.titleLen  }个字`;
 		if(author .length > config.authorLen ) errors.author  = `作者不能超过${config.authorLen }个字`;
@@ -89,28 +58,16 @@ export const useArticleForm = (source: MaybeRefOrGetter<Article | null | undefin
 	}
 
 	/* ---------- 提交 ---------- */
-	async function onSubmit(): Promise<boolean> {
+	function onSubmit() {
 		if (!validate()) return false;
-
-		const article = toValue(source);
 
 		submitting.value = true;
 		try {
-			const tags = [...new Set(form.tags.map(t => t.trim()).filter(Boolean))];
-
-			const data: InputArticleData = {
-				title: form.title.trim(),
-				author: form.author.trim(),
-				summary: form.summary.trim(),
-				tags,
-				content: form.content,
-			};
-
 			if (article) {
-				updateArticle(article.id, data);
+				updateArticle(article, form);
 				toast.success('文章已更新');
 			} else {
-				addArticle(data);
+				addArticle(form);
 				toast.success('文章添加成功');
 				resetForm();
 			}
@@ -127,7 +84,8 @@ export const useArticleForm = (source: MaybeRefOrGetter<Article | null | undefin
 
 	/** 恢复为初始值（编辑时恢复为原文内容，新建时清空） */
 	function resetForm() {
-		resetTo(initial);
+		Object.assign(form, emptyForm());
+		clearErrors();
 	}
 
 	return {

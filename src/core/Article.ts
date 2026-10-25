@@ -1,11 +1,10 @@
+import { config } from "@/config";
 import type { IArticle, InputArticleData } from "@/types";
 import { Time } from "@/utils/Time";
 
 const endChars = ['.', '。', '，', ',', '\n'] as const;
 
 export default class Article implements IArticle {
-	static readonly maxSummaryLength = 100; // char
-
 	public id: string;
 	public title: string;
 	public summary: string;
@@ -15,7 +14,7 @@ export default class Article implements IArticle {
 	public createTime: Time;
 
 	static getSummary(article: Article) {
-		const maxLen = Article.maxSummaryLength;
+		const maxLen = config.summaryLen;
 		const { content } = article;
 		if(content.length <= maxLen) return content;
 
@@ -27,17 +26,35 @@ export default class Article implements IArticle {
 				break;
 			}
 		}
-		return content.slice(0, endIndex === -1 ? maxLen : Math.min(endIndex + 1, maxLen)) + '...';
+		return content.slice(0, endIndex === -1 ? maxLen : Math.min(endIndex, maxLen)) + '...';
 	}
 
 	constructor(data: InputArticleData) {
-		this.id = data.id ?? crypto.randomUUID();
-		this.title = data.title;
+		this.id      = data.id ?? crypto.randomUUID();
+		this.title   = data.title;
 		this.content = data.content;
 		this.summary = data.summary || Article.getSummary(this);
-		this.author = data.author;
-		this.tags = data.tags;
+		this.author  = data.author;
+		this.tags    = data.tags;
 		this.createTime = new Time(data.createTime);
+	}
+
+	public set(data: Partial<InputArticleData>) {
+		data.title   && (this.title   = data.title);
+		data.content && (this.content = data.content);
+		data.summary && (this.summary = data.summary);
+		data.author  && (this.author  = data.author);
+		data.tags    && (this.tags    = data.tags);
+	}
+
+	public clone() {
+		return {
+			title: this.title,
+			author: this.author,
+			summary: this.summary,
+			tags: [...this.tags],
+			content: this.content,
+		}
 	}
 
 	/** 返回可序列化的普通对象（由调用方统一做 JSON.stringify） */

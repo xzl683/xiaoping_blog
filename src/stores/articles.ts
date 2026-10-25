@@ -1,8 +1,8 @@
 import { computed, ref, type ComputedRef } from 'vue';
+import type { InputArticleData } from '@/types';
 import { storage } from '@/utils/storage';
 import Article from '@/core/Article';
-import { articleData as mockData } from '@/mock/init_articles';
-import type { InputArticleData } from '@/types';
+import { articleData as mockData } from '@/mock/mock_articles';
 
 const articles = ref<Article[]>([]);
 let initialized = false;
@@ -26,6 +26,13 @@ function setStorage() {
 	storage.set(articles.value);
 }
 
+function getExistingTags() {
+	const set = new Set<string>();
+	for (const art of articles.value)
+		for (const t of art.tags) set.add(t);
+	return Array.from(set);
+}
+
 /** 只读视图：外部只能读取，写操作统一走下方 actions */
 const articlesView: ComputedRef<readonly Article[]> = computed(() => articles.value);
 
@@ -43,16 +50,8 @@ export const useArticleStore = () => {
 		setStorage();
 	}
 
-	function updateArticle(id: string, data: InputArticleData) {
-		const index = articles.value.findIndex(art => art.id === id);
-		if (index === -1) return;
-
-		const old = articles.value[index];
-		articles.value[index] = new Article({
-			...data,
-			id: old.id,
-			createTime: old.createTime,
-		});
+	function updateArticle(article: Article, data: InputArticleData) {
+		article.set(data);
 		setStorage();
 	}
 
@@ -61,6 +60,8 @@ export const useArticleStore = () => {
 		addArticle,
 		deleteArticle,
 		updateArticle,
-		setStorage
+		setStorage,
+
+		tags: computed(() => getExistingTags())
 	};
 };

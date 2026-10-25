@@ -64,6 +64,10 @@ const { article } = defineProps<{
 }
 
 .article-author {
+	display: flex;
+	flex-grow: 1;
+	align-items: flex-end;
+
 	font-size: 0.9rem;
 	color: var(--text);
 	margin: 0;
