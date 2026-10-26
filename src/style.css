@@ -40,7 +40,7 @@
 	--warning: #b45309;
 	--warning-bg: #fff3cd;
 
-	--content-max-width: 800px;
+	--content-max-width: 900px;
 	--content-padding: 30px;
 	--header-height: 60px;
 	--dashed-h: url(/src/assets/images/dashed-horizontal-light.svg);
@@ -54,7 +54,7 @@
 
 	font: 18px/145% var(--sans);
 	letter-spacing: 0.18px;
-	color-scheme: light dark;
+	color-scheme: light;
 	color: var(--text);
 	background: var(--bg);
 	font-synthesis: none;
@@ -67,7 +67,7 @@
 	}
 }
 
-@media (prefers-color-scheme: dark) {
+@media (color-scheme: dark) {
 	:root {
 		--text: #9ca3af;
 		--text-h: #f3f4f6;

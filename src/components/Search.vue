@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, useTemplateRef } from 'vue';
-
+import { ALL_TAG_SYMBOL } from '@/config'
 import BaseModal from '@/components/BaseModal.vue';
 import { useArticleStore } from '@/stores/articles';
 import type Article from '@/core/Article';
@@ -10,59 +10,48 @@ import { highlight } from '@/utils/highlightKeyWord';
 const { isOpen, close } = useSearch();
 const { articles, tags: existingTags } = useArticleStore();
 
-const keyword = ref('');
-/** 多选标签，默认 ['all']；all 与其他标签互斥 */
-const selectedTags = ref<string[]>(['all']);
 const inputRef = useTemplateRef<HTMLInputElement>('inputRef');
+	
+const keyword = ref('');
+const selectedTags = ref<string[]>([ALL_TAG_SYMBOL]);
 
-/** 当前选中的标签集合，供模板直接判断 */
-const selectedTagSet = computed(() => new Set(selectedTags.value));
-/** 命中筛选的普通标签（不含 all） */
-const activeTagSet = computed(() => new Set(selectedTags.value.filter(t => t !== 'all')));
-const isAllSelected = computed(() => selectedTagSet.value.has('all'));
-
-/* ---------- 标签列表：从文章里动态收集 ---------- */
-const allTags = computed(() => ['all'].concat(existingTags.value));
+const allTags = computed(() => [ALL_TAG_SYMBOL].concat(existingTags.value));
+const isAllSelected = computed(() => !!selectedTags.value.find(tag => tag === ALL_TAG_SYMBOL));
+const isIdle = computed(() => !keyword.value.trim() && isAllSelected.value);
 
 /* ---------- 点击标签：all 互斥，非 all 多选 ---------- */
 function toggleTag(t: string) {
-	if (t === 'all') {
+	if (t === ALL_TAG_SYMBOL) {
 		// 点 all：清空其他，只保留 all
-		selectedTags.value = ['all'];
+		selectedTags.value = [ALL_TAG_SYMBOL];
 		return;
 	}
 
 	// 点普通标签：先移除 all，再 toggle
-	const list = selectedTags.value.filter(x => x !== 'all');
+	const list = selectedTags.value.filter(x => x !== ALL_TAG_SYMBOL);
 	const idx = list.indexOf(t);
 
 	if (idx === -1) list.push(t);
 	else list.splice(idx, 1);
 
 	// 全部取消后回退到 all
-	selectedTags.value = list.length > 0 ? list : ['all'];
+	selectedTags.value = list.length > 0 ? list : [ALL_TAG_SYMBOL];
 }
 
-/* ---------- 是否处于“还没开始搜”的状态 ---------- */
-const isIdle = computed(() => !keyword.value.trim() && isAllSelected.value);
 
 /* ---------- 搜索结果 ---------- */
 const resultArt = computed<Article[]>(() => {
 	if (isIdle.value) return [];
 
 	const kw = keyword.value.trim().toLowerCase();
-	const tags = selectedTags.value;
-	const all = isAllSelected.value;
 
-	return articles.value.filter(art => {
-		const matchKeyword = !kw || art.title.toLowerCase().includes(kw);
-
-		const artTags = art.tags ?? [];
-		// OR 逻辑：文章命中任意一个选中标签即可
-		const matchTag = all || artTags.some(t => tags.includes(t));
-
-		return matchKeyword && matchTag;
-	});
+	return articles.value.filter(art =>
+		(!kw || art.title.toLowerCase().includes(kw)) &&
+		(
+			isAllSelected.value ||
+			art.tags.some(t => selectedTags.value.includes(t))
+		)
+	);
 });
 
 /** 结果项 + 标题高亮片段 */
@@ -114,11 +103,11 @@ async function focusInput() {
 					:key="t"
 					type="button"
 					class="tag-chip"
-					:class="{ active: selectedTagSet.has(t) }"
-					:aria-pressed="selectedTagSet.has(t)"
+					:class="{ active: selectedTags.includes(t) }"
+					:aria-pressed="selectedTags.includes(t)"
 					@click="toggleTag(t)"
 				>
-					{{ t === 'all' ? '全部' : t }}
+					{{ t === ALL_TAG_SYMBOL ? '全部' : t }}
 				</button>
 			</div>
 
@@ -156,7 +145,7 @@ async function focusInput() {
 								v-for="t in result.article.tags"
 								:key="t"
 								class="tag"
-								:class="{ 'tag--match': activeTagSet.has(t) }"
+								:class="{ 'tag--match': selectedTags.includes(t) }"
 							>
 								{{ t }}
 							</span>

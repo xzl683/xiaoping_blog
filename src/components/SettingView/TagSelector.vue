@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue';
+import { useToast } from '@/stores/toast';
 
 const modelValue = defineModel<string[]>({ required: true });
 
 const props = defineProps<{
 	suggestions: string[];
 }>();
+
+const toast = useToast();
 
 const root = ref<HTMLElement | null>(null);
 const draftInput = ref<HTMLInputElement | null>(null);
@@ -20,8 +23,7 @@ const availableSuggestions = computed(() =>
 );
 
 function pick(tag: string) {
-	if (!modelValue.value.includes(tag))
-		modelValue.value = [...modelValue.value, tag];
+	modelValue.value = [...modelValue.value, tag];
 	open.value = false;
 }
 
@@ -41,6 +43,10 @@ function commitDraft() {
 
 	const name = draft.value.trim();
 	draft.value = null;
+	if(name === '全部') {
+		toast.error('标签名称不能为<全部>');
+		return;
+	}
 
 	if (!name || modelValue.value.includes(name)) return;
 	modelValue.value = [...modelValue.value, name];
