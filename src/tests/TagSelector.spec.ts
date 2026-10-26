@@ -1,7 +1,7 @@
 import { mount } from '@vue/test-utils';
 import { nextTick } from 'vue';
 import { describe, expect, it } from 'vitest';
-import TagSelector from './TagSelector.vue';
+import TagSelector from '../components/SettingView/TagSelector.vue';
 
 function mountSelector() {
 	const updates: string[][] = [];

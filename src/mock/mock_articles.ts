@@ -4,6 +4,7 @@ import a1 from './a1.txt';
 import a2 from './a2.txt';
 import a3 from './a3.txt';
 import a4 from './a4.txt';
+import a5 from './a5.txt';
 
 const fetchText = (path: string) => fetch(path).then(res => res.text());
 
@@ -30,7 +31,7 @@ export const articleData: InputArticleData[] = [
 		tags: ['hello'],
 	}, {
 		title: 'test',
-		content: 'test',
+		content: await fetchText(a5),
 		author: 'xzl',
 		tags: ['code'],
 	},

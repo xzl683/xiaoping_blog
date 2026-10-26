@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import Article from './Article';
+import Article from '../core/Article';
+import { config } from '@/config';
 
 const base = {
 	title: '标题',
@@ -21,7 +22,7 @@ describe('Article.getSummary', () => {
 
 	it('没有句末标点时按最大长度截断', () => {
 		const article = new Article({ ...base, content: 'x'.repeat(200) });
-		expect(article.summary).toBe(`${'x'.repeat(Article.maxSummaryLength)}...`);
+		expect(article.summary).toBe(`${'x'.repeat(config.summaryLen)}...`);
 	});
 
 	it('显式传入摘要时优先使用', () => {

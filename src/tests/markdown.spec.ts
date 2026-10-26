@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isMarkdown, renderContent } from './markdown';
+import { isMarkdown, renderContent } from '../utils/markdown';
 
 describe('isMarkdown', () => {
 	it('识别常见 Markdown 特征', () => {

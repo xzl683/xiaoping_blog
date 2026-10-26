@@ -13,7 +13,7 @@ const sample = (title: string): InputArticleData => ({
 /** store 是模块级单例，每个用例前重置模块以隔离 initialized 状态 */
 async function loadStore() {
 	vi.resetModules();
-	const { useArticleStore } = await import('./articles');
+	const { useArticleStore } = await import('../stores/articles');
 	return useArticleStore();
 }
 
@@ -39,7 +39,7 @@ describe('useArticleStore', () => {
 		const created = store.articles.value[0];
 		expect(created.title).toBe('新文章');
 
-		store.updateArticle(created.id, sample('改名文章'));
+		store.updateArticle(created, sample('改名文章'));
 		const updated = store.articles.value[0];
 		expect(updated.title).toBe('改名文章');
 		expect(updated.id).toBe(created.id);

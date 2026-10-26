@@ -39,7 +39,7 @@ async function mountSearch() {
 	localStorage.setItem(STORAGE_KEY, JSON.stringify(seed));
 	vi.resetModules();
 
-	const { default: Search } = await import('./Search.vue');
+	const { default: Search } = await import('../components/Search.vue');
 	const router = createRouter({
 		history: createMemoryHistory(),
 		routes: [
