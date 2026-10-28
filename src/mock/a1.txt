@@ -1,245 +1,277 @@
-数据结构是计算机科学必须掌握的一门学问，很多的教材都是用C语言实现链表，因为C有指针，可以很方便的控制内存，很方便就实现链表，其他的语言，则没那么方便，有很多都是用模拟链表.
-     因为python是动态语言，可以直接把对象赋值给新的变量。在C/C++中，通常采用“指针+结构体”来实现链表；而在Python中，则可以采用“引用+类”来实现链表。
-链表的定义：是一组数据项的集合，其中每个数据项都是一个节点的一部分，每个节点还包含指向下一个节点的链接
-链表的结构：data为自定义的数据，next为下一个节点的地址。
-基本元素：
-节点：每个节点有两个部分，左边称为值域，存放用户数据；右边部分称为指针域，用来存放指向下一个元素的指针。
-head:head节点永远指向第一个节点
-tail: tail永远指向最后一个节点
-None:链表中最后一个节点的指针域为None值
-链表种类：单向链表、单向循环链表、双向链表、双向循环链表
-   1、节点类定义如下，我们将节点类定义成Node ，该类在初始化实例对象时，定义了两个实例变量，其中data用来存储节点的值，next用来存储下一个节点的索引：
+数据结构 - 链表
+链表（Linked List）是一种由若干个节点通过指针依次连接而成的线性数据结构。
 
-class Node:
-    def __init__(self,data = None, next = None):
-        self.data = data
-        self.next = next
-领2年VIP
-python
-运行
-2、定义一个节点，如下创建了三个独立的节点：
+与数组不同，链表中的元素在内存中并不要求连续存放。
 
-node1 = Node(1)
-node2 = Node(2)
-node3 = Node(3)
-领2年VIP
-然后再把每个节点的关系表示出来，就OK了。
+链表的基本概念与节点结构
+链表的每个节点包含两部分：数据域（data）存储实际数据，指针域（next）指向下一个节点。
 
-node1.next = node2
-node2.next = node3
-领2年VIP
-操作链表的原理知识
-1.遍历链表
-链表的基本操作：遍历next节点 
+链表节点结构与内存中的链式关系
 
-在列表中查找一个元素 
-在列表中插入一个元素
-从列表中删除一列元素
-   不可以用head来遍历列表，否则会丢失列表的一些节点 ，可以使用和head相同类型的临时的指针变量，这个变量先初始化为链表结构的head指针，然后控制一个循环。
+上图展示了链表在内存中的实际样貌。每个节点通过 malloc 在堆上独立分配，因此它们在内存中可以不连续。节点之间通过 next 指针串联，最后一个节点的 next 指向 NULL 表示链表结束。
 
-probe = head
-while probe != None:
-    probe = probe.next
-领2年VIP
-python
-运行
-插入
+在 C 语言中，链表节点通过结构体来定义：
 
+实例
+```c
+#include <stdio.h>
+#include <stdlib.h>  /* malloc, free */
 
-3.删除
+/* 链表节点结构体
+   data：数据域，存储整型数据
+   next：指针域，指向下一个同类型节点 */
+struct Node {
+    int data;
+    struct Node* next;
+};
 
+/* 创建一个新节点
+   参数 value: 节点的数据值
+   返回值：指向新节点的指针，分配失败返回 NULL */
+struct Node* createNode(int value) {
+    struct Node* newNode = (struct Node*)malloc(sizeof(struct Node));
+    if (newNode == NULL) {
+        printf("内存分配失败\n");
+        return NULL;
+    }
+    newNode->data = value;   /* 设置数据 */
+    newNode->next = NULL;    /* 新节点的 next 初始化为 NULL */
+    return newNode;
+}
+```
+struct Node* next 是一种自引用结构，即结构体内部包含一个指向同类型结构体的指针。这是构建所有链式数据结构（链表、树、图）的核心技术。
 
-#先定一个node的类
-class Node():                  #value + next
-    def __init__ (self, value = None, next = None):
-        self._value = value
-        self._next = next
- 
-    def getValue(self):
-        return self._value
- 
-    def getNext(self):
-        return self._next
- 
-    def setValue(self,new_value):
-        self._value = new_value
- 
-    def setNext(self,new_next):
-        self._next = new_next
- 
-#实现Linked List及其各类操作方法
-class LinkedList():
-    def __init__(self):      #初始化链表为空表
-        self._head = Node() 
-        self._tail = None
-        self._length = 0
- 
-    #检测是否为空
-    def isEmpty(self):
-        return self._head == None  
- 
-    #add在链表前端添加元素:O(1)
-    def add(self,value):
-        newnode = Node(value,None)    #create一个node（为了插进一个链表）
-        newnode.setNext(self._head)   
-        self._head = newnode
- 
-    #append在链表尾部添加元素:O(n)
-    def append(self,value):
-        newnode = Node(value)
-        if self.isEmpty():
-            self._head = newnode   #若为空表，将添加的元素设为第一个元素
-        else:
-            current = self._head
-            while current.getNext() != None:
-                current = current.getNext()   #遍历链表
-            current.setNext(newnode)   #此时current为链表最后的元素
- 
-    #search检索元素是否在链表中    
-    def search(self,value):
-        current=self._head
-        foundvalue = False
-        while current != None and not foundvalue:
-            if current.getValue() == value:
-                foundvalue = True
-            else:
-                current=current.getNext()
-        return foundvalue
- 
-    #index索引元素在链表中的位置
-    def index(self,value):
-        current = self._head
-        count = 0
-        found = None
-        while current != None and not found:
-            count += 1
-            if current.getValue()==value:
-                found = True
-            else:
-                current=current.getNext()
-        if found:
-            return count
-        else:
-            raise ValueError ('%s is not in linkedlist'%value)
- 
-    #remove删除链表中的某项元素
-    def remove(self,value):
-        current = self._head
-        pre = None
-        while current!=None:
-            if current.getValue() == value:
-                if not pre:
-                    self._head = current.getNext()
-                else:
-                    pre.setNext(current.getNext())
-                break
-            else:
-                pre = current
-                current = current.getNext()
- 
-    #insert链表中插入元素
-    def insert(self,pos,value):
-        if pos <= 1:
-            self.add(value)
-        elif pos > self.size():
-            self.append(value)
-        else:
-            temp = Node(value)
-            count = 1
-            pre = None
-            current = self._head
-            while count < pos:
-                count += 1
-                pre = current
-                current = current.getNext()
-            pre.setNext(temp)
-            temp.setNext(current)
-领2年VIP
-python
-运行
+单链表的基本操作
+创建链表与遍历
+实例
+```c
+#include <stdio.h>
+#include <stdlib.h>
 
-leetcode :
+struct Node {
+    int data;
+    struct Node* next;
+};
 
-      给出两个 非空 的链表用来表示两个非负的整数。其中，它们各自的位数是按照 逆序 的方式存储的，并且它们的每个节点只能存储 一位 数字。如果，我们将这两个数相加起来，则会返回一个新的链表来表示它们的和。您可以假设除了数字 0 之外，这两个数都不会以 0 开头。
+/* 遍历并打印链表的所有节点
+   从头节点开始，沿着 next 指针逐个访问，直至 NULL */
+void traverse(struct Node* head) {
+    struct Node* current = head;  /* 从头部开始 */
+    printf("链表内容: ");
+    while (current != NULL) {
+        printf("%d -> ", current->data);
+        current = current->next;  /* 移动到下一个节点 */
+    }
+    printf("NULL\n");
+}
 
-示例：
+/* 创建包含 n 个节点的链表（1, 2, 3, ..., n） */
+struct Node* createList(int n) {
+    if (n <= 0) return NULL;
 
-输入：(2 -> 4 -> 3) + (5 -> 6 -> 4)
-输出：7 -> 0 -> 8
-原因：342 + 465 = 807
-领2年VIP
-html
-# Definition for singly-linked list.
-# class ListNode:
-#     def __init__(self, x):
-#         self.val = x
-#         self.next = None
- 
-class Solution:
-    def addTwoNumbers(self, l1: ListNode, l2: ListNode) -> ListNode:
-        n=l1.val+l2.val
-        l3=ListNode(n % 10)
-        l3.next=ListNode(n//10)
-        p1=l1.next
-        p2=l2.next
-        p3=l3
-        while True:
-            if p1 and p2:
-                sum=p1.val+p2.val+p3.next.val
-                p3.next.val=sum%10
-                p3.next.next=ListNode(sum//10)
-                p1=p1.next
-                p2=p2.next
-                p3=p3.next
-            elif p1 and not p2:
-                sum=p1.val+p3.next.val
-                p3.next.val=sum%10
-                p3.next.next=ListNode(sum//10)
-                p1=p1.next
-                p3=p3.next
-            elif not p1 and p2:
-                sum=p2.val+p3.next.val
-                p3.next.val=sum%10
-                p3.next.next=ListNode(sum//10)
-                p2=p2.next
-                p3=p3.next
-            else:
-                if p3.next.val==0:
-                    p3.next=None
-                break
-        return l3
-领2年VIP
-python
-运行
+    struct Node* head = (struct Node*)malloc(sizeof(struct Node));
+    head->data = 1;
+    head->next = NULL;
 
-from :https://www.cnblogs.com/kumata/p/9147077.html
+    struct Node* tail = head;  /* tail 始终指向最后一个节点 */
+    for (int i = 2; i <= n; i++) {
+        struct Node* newNode = (struct Node*)malloc(sizeof(struct Node));
+        newNode->data = i;
+        newNode->next = NULL;
+        tail->next = newNode;  /* 将新节点连接到链表末尾 */
+        tail = newNode;           /* 更新 tail 指针 */
+    }
+    return head;
+}
 
-单链表翻转：开始以单链表的第二个元素为循环变量，用2个变量循环向后操作,并设置1个辅助变量tmp,保存数据;时间消耗O(n),空间消耗O(1)
+int main() {
+    struct Node* head = createList(5);
+    traverse(head);
+    /* 输出: 链表内容: 1 -> 2 -> 3 -> 4 -> 5 -> NULL */
+    return 0;
+}
+```
+插入操作
+链表插入与删除操作的指针调整过程
 
-def reverse_linkedlist3(head):
-    if head == None or head.next == None: #边界条件
-        return head
-    p1 = head #循环变量1
-    p2 = head.next #循环变量2
-    tmp = None #保存数据的临时变量
-    while p2:
- 
-        tmp = p2.next  #如果没有他，p2.next这个节点以及后面的节点都将会消失
- 
-        p2.next = p1
- 
-        p1 = p2
- 
-        p2 = tmp
-    head.next = None
-    return p1
-领2年VIP
-python
-运行
+上图展示了链表插入和删除时指针变化的完整过程。理解指针的调整顺序非常关键：如果顺序错误，会导致链表断裂或内存泄漏。
 
-                          
+实例
+```c
+#include <stdio.h>
+#include <stdlib.h>
 
-from：https://www.cnblogs.com/petrolero/p/9822008.html
-————————————————
-版权声明：本文为CSDN博主「菜鸟知识搬运工」的原创文章，遵循CC 4.0 BY-SA版权协议，转载请附上原文出处链接及本声明。
-原文链接：https://blog.csdn.net/qq_30815237/article/details/90750349
+struct Node {
+    int data;
+    struct Node* next;
+};
+
+/* 在链表头部插入新节点（头插法）
+   时间复杂度：O(1)
+   返回值：新的头节点指针 */
+struct Node* insertAtHead(struct Node* head, int value) {
+    struct Node* newNode = (struct Node*)malloc(sizeof(struct Node));
+    newNode->data = value;
+    newNode->next = head;  /* 新节点指向原头节点 */
+    return newNode;         /* 新节点成为新的头节点 */
+}
+
+/* 在链表尾部插入新节点（尾插法）
+   时间复杂度：O(n)，需要遍历到尾部 */
+struct Node* insertAtTail(struct Node* head, int value) {
+    struct Node* newNode = (struct Node*)malloc(sizeof(struct Node));
+    newNode->data = value;
+    newNode->next = NULL;
+
+    if (head == NULL) {
+        return newNode;  /* 空链表，新节点即为头节点 */
+    }
+
+    struct Node* current = head;
+    while (current->next != NULL) {
+        current = current->next;  /* 遍历到最后一个节点 */
+    }
+    current->next = newNode;  /* 尾部节点指向新节点 */
+    return head;
+}
+
+/* 在指定位置后插入新节点
+   时间复杂度：O(n)，需要先找到 prevNode */
+void insertAfter(struct Node* prevNode, int value) {
+    if (prevNode == NULL) {
+        printf("前驱节点不能为空\n");
+        return;
+    }
+    struct Node* newNode = (struct Node*)malloc(sizeof(struct Node));
+    newNode->data = value;
+    /* 关键：先让新节点指向后继，再让前驱指向新节点 */
+    newNode->next = prevNode->next;
+    prevNode->next = newNode;
+}
+
+void printList(struct Node* head) {
+    struct Node* cur = head;
+    while (cur != NULL) {
+        printf("%d ", cur->data);
+        cur = cur->next;
+    }
+    printf("\n");
+}
+
+int main() {
+    struct Node* head = NULL;
+
+    head = insertAtHead(head, 30);  /* 链表: 30 */
+    head = insertAtHead(head, 20);  /* 链表: 20 -> 30 */
+    head = insertAtHead(head, 10);  /* 链表: 10 -> 20 -> 30 */
+
+    printf("头插后: "); printList(head);  /* 输出: 10 20 30 */
+
+    head = insertAtTail(head, 40);  /* 链表: 10 -> 20 -> 30 -> 40 */
+    printf("尾插后: "); printList(head);  /* 输出: 10 20 30 40 */
+
+    insertAfter(head->next, 25);    /* 在 20 后面插入 25 */
+    printf("中间插入后: "); printList(head);
+    /* 输出: 10 20 25 30 40 */
+    return 0;
+}
+```
+删除操作
+实例
+```c
+#include <stdio.h>
+#include <stdlib.h>
+
+struct Node {
+    int data;
+    struct Node* next;
+};
+
+/* 删除链表头部节点
+   时间复杂度：O(1)
+   返回值：新的头节点指针 */
+struct Node* deleteHead(struct Node* head) {
+    if (head == NULL) return NULL;
+
+    struct Node* temp = head;   /* 保存旧头节点 */
+    head = head->next;          /* 头指针后移 */
+    free(temp);                 /* 释放旧头节点的内存 */
+    return head;
+}
+
+/* 删除链表中第一个值为 target 的节点
+   时间复杂度：O(n)，需要遍历查找目标节点 */
+struct Node* deleteByValue(struct Node* head, int target) {
+    if (head == NULL) return NULL;
+
+    /* 特殊情况：目标值在头节点 */
+    if (head->data == target) {
+        struct Node* temp = head;
+        head = head->next;
+        free(temp);
+        return head;
+    }
+
+    /* 遍历查找目标节点的前驱节点 */
+    struct Node* current = head;
+    while (current->next != NULL && current->next->data != target) {
+        current = current->next;
+    }
+
+    /* 找到目标节点，进行删除 */
+    if (current->next != NULL) {
+        struct Node* temp = current->next;
+        current->next = current->next->next;  /* 跳过目标节点 */
+        free(temp);  /* 释放目标节点内存 */
+    }
+    return head;
+}
+
+void printList(struct Node* head) {
+    struct Node* cur = head;
+    while (cur != NULL) {
+        printf("%d ", cur->data);
+        cur = cur->next;
+    }
+    printf("\n");
+}
+
+int main() {
+    /* 构建链表: 10 -> 20 -> 30 -> 40 */
+    struct Node* head = NULL;
+    int vals[] = {10, 20, 30, 40};
+    for (int i = 3; i >= 0; i--) {
+        struct Node* n = (struct Node*)malloc(sizeof(struct Node));
+        n->data = vals[i];
+        n->next = head;
+        head = n;
+    }
+    printf("原始链表: "); printList(head);  /* 输出: 10 20 30 40 */
+
+    head = deleteHead(head);
+    printf("删除头部后: "); printList(head);  /* 输出: 20 30 40 */
+
+    head = deleteByValue(head, 30);
+    printf("删除 30 后: "); printList(head);  /* 输出: 20 40 */
+    return 0;
+}
+```
+链表的删除操作中，free() 至关重要。如果只调整指针而不释放被删除节点的内存，就会造成内存泄漏。在 C 语言中，每次 malloc 都必须有对应的 free。
+
+链表 vs 数组的对比
+数组与链表全方位对比
+
+对比维度	数组	链表
+内存布局	连续存储	分散存储，通过指针连接
+随机访问	O(1)	O(n)
+头部插入/删除	O(n)	O(1)
+尾部插入/删除	O(1)	O(1)（有尾指针时）/ O(n)（无尾指针）
+中间插入/删除	O(n)	O(1)（已知位置）
+空间开销	仅数据本身	数据 + 指针（每个节点多 8 字节（64位））
+缓存友好度	高（空间局部性）	低（节点分散）
+容量	固定（静态数组）	动态增长
+理解这种权衡取舍，是数据结构选型的核心能力之一。
+
+如果数据量在运行前已知且不会频繁变化，且需要频繁的随机访问，数组是更好的选择。
+
+如果数据量会频繁增删且规模不确定，链表这类动态结构则更加灵活。

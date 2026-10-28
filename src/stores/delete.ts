@@ -7,16 +7,16 @@ export const useDeleteArticle = () => {
 	const { deleteArticle } = useArticleStore();
 	const toast = useToast();
 
-	const dialogOpen = ref(false);
+	const isOpen = ref(false);
 	const deleteId = ref<string | null>(null);
 
-	function openDialog(article: Article) {
+	function open(article: Article) {
 		deleteId.value = article.id;
-		dialogOpen.value = true;
+		isOpen.value = true;
 	}
 
 	function close() {
-		dialogOpen.value = false;
+		isOpen.value = false;
 		deleteId.value = null;
 	}
 
@@ -25,13 +25,13 @@ export const useDeleteArticle = () => {
 
 		deleteArticle(deleteId.value);
 		toast.success('删除成功');
-		dialogOpen.value = false;
+		isOpen.value = false;
 		deleteId.value = null;
 	}
 
 	return {
-		dialogOpen,
-		openDialog,
+		isOpen,
+		open,
 		close,
 		confirm
 	}

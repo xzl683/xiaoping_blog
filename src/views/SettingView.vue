@@ -7,8 +7,8 @@ import ArticleForm from '@/components/SettingView/ArticleForm.vue';
 import ArticleList from '@/components/SettingView/ArticleList.vue';
 
 import { useArticleStore } from '@/stores/articles';
-import { useDeleteArticle } from '@/composables/useDeleteArticle';
-import { useEditArticle } from '@/composables/useEditArticle';
+import { useDeleteArticle } from '@/stores/delete';
+import { useEditArticle } from '@/stores/edit';
 
 type Mode = 'add' | 'edit' | 'delete';
 
@@ -22,12 +22,12 @@ const activeMode = ref<Mode>('add');
 
 const { articles } = useArticleStore();
 
-const { editingArticle, openEditor, closeEditor } = useEditArticle();
-const { dialogOpen, openDialog, close: closeDeleteDialog, confirm: confirmDelete } = useDeleteArticle();
+const editor = useEditArticle();
+const deleter = useDeleteArticle();
 
 /* 离开编辑模式时收起编辑器 */
 watch(activeMode, mode => {
-	if (mode !== 'edit') closeEditor();
+	if (mode !== 'edit') editor.close();
 });
 </script>
 
@@ -53,17 +53,17 @@ watch(activeMode, mode => {
 			<div v-else-if="activeMode === 'edit'" class="full-horizon dashed-btm">
 				<section class="mode-panel content-section">
 					<ArticleForm
-						v-if="editingArticle"
-						:key="editingArticle.id"
-						:article="editingArticle"
-						@cancel="closeEditor"
-						@saved="closeEditor"
+						v-if="editor.editing.value"
+						:key="editor.editing.value.id"
+						:article="editor.editing.value"
+						@cancel="editor.close()"
+						@saved="editor.close()"
 					/>
 					<ArticleList
 						v-else
 						:articles="articles"
 						action="edit"
-						@action="openEditor"
+						@action="editor.open"
 					/>
 				</section>
 			</div>
@@ -74,20 +74,20 @@ watch(activeMode, mode => {
 					<ArticleList
 						:articles="articles"
 						action="delete"
-						@action="openDialog"
+						@action="deleter.open"
 					/>
 				</section>
 			</div>
 		</Transition>
 
-		<BaseModal v-model:open="dialogOpen" title="确认删除?" header-close>
+		<BaseModal v-model:open="deleter.isOpen.value" title="确认删除?" header-close>
 			<div class="delete-modal">删除后无法恢复，确定要删除这篇文章吗?</div>
 
 			<template #footer>
-				<button type="button" class="btn btn--ghost" @click="closeDeleteDialog">
+				<button type="button" class="btn btn--ghost" @click="deleter.close()">
 					取消
 				</button>
-				<button type="button" class="btn btn--danger" @click="confirmDelete">
+				<button type="button" class="btn btn--danger" @click="deleter.confirm()">
 					确认删除
 				</button>
 			</template>
@@ -98,6 +98,8 @@ watch(activeMode, mode => {
 </template>
 
 <style scoped lang="less">
+@content-max-width: 800px;
+
 #setting {
 	display: flex;
 	flex-direction: column;
@@ -133,6 +135,12 @@ watch(activeMode, mode => {
 	margin: 30px;
 	width: 300px;
 	height: 100px;
+}
+
+@media (max-width: @content-max-width) {
+	.delete-modal {
+		width: 80%;
+	}
 }
 
 /* ===== 模式面板切换淡入淡出动画 ===== */

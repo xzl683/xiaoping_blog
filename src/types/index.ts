@@ -18,6 +18,6 @@ export interface IArticle {
 // id / createTime / summary 可选：新建时自动生成或补全，反序列化时复用已持久化的值
 export type InputArticleData = Omit<IArticle, 'id' | 'createTime' | 'summary'> & {
 	id?: string;
-	createTime?: Partial<TimeData>;
+	createTime?: TimeData;
 	summary?: string;
 };

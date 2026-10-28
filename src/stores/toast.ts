@@ -12,12 +12,12 @@ export interface Toast {
 
 const toasts = ref<Toast[]>([]);
 /** 每个 toast 的自动关闭定时器，提前移除时一并清理 */
-const timers = new Map<number, ReturnType<typeof setTimeout>>();
+const timers = new Map<number, number>();
 let seed = 0;
 
 function clearTimer(id: number) {
 	const timer = timers.get(id);
-	if (timer === undefined) return;
+	if (!timer) return;
 
 	clearTimeout(timer);
 	timers.delete(id);
@@ -52,7 +52,7 @@ export function useToast() {
 		toasts: readonly(toasts),
 		remove,
 		success: (msg: string, duration?: number) => push('success', msg, duration),
-		error: (msg: string, duration?: number) => push('error', msg, duration),
-		info: (msg: string, duration?: number) => push('info', msg, duration)
+		error  : (msg: string, duration?: number) => push('error'  , msg, duration),
+		info   : (msg: string, duration?: number) => push('info'   , msg, duration)
 	};
 }

@@ -7,7 +7,7 @@ import { config } from '@/config';
 
 const props = defineProps<{
 	/** 传入文章表示编辑，否则为新建 */
-	article?: Article | null;
+	article?: Article;
 }>();
 
 const emit = defineEmits<{

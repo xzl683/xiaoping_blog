@@ -10,15 +10,15 @@ const fetchText = (path: string) => fetch(path).then(res => res.text());
 
 export const articleData: InputArticleData[] = [
 	{
-		title: 'python linkedlist',
+		title: 'c链表',
 		content: await fetchText(a1),
 		author: 'xzl',
-		tags: ['python', 'code', 'study'],
+		tags: ['c', 'code', 'study'],
 	}, {
-		title: 'hello world',
+		title: 'cookie',
 		content: await fetchText(a2),
 		author: 'xzl',
-		tags: ['code'],
+		tags: ['code', 'web', 'study'],
 	}, {
 		title: '小平前端考核',
 		content: await fetchText(a3),
@@ -28,12 +28,12 @@ export const articleData: InputArticleData[] = [
 		title: '链表 · 栈 · 队列',
 		content: await fetchText(a4),
         author: 'xzl',
-		tags: ['hello'],
+		tags: ['acm', 'study'],
 	}, {
-		title: 'test',
+		title: '老外爱上“垒长城” 中国麻将在美国爆火：一套300美元起供不应求',
 		content: await fetchText(a5),
 		author: 'xzl',
-		tags: ['code'],
+		tags: ['news'],
 	},
 	// {
 	// 	title: 'hello world',

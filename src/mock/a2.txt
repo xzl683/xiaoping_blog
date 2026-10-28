@@ -1,8 +1,174 @@
-GitHub 构建的目标是让人们编写代码、将其组织到存储库中，并通过分支、提交、问题和 Pull Request 进行协作。
-但下一代软件将以不同于以往的方式构建，因为它将服务于一种不同类型的开发者：智能体。
-智能体编写的代码比以往任何时候都要多——它们修复漏洞、构建功能、编写测试、审核更改、更新依赖项，以及进行维持应用运行所需的所有日常维护工作。
-这个全新世界中，将会有数百甚至数千个智能体同时在同一代码库上协作。那么，基础层应当长什么样？
-智能体如何知道其他智能体在做什么？当它们进行存在冲突的更改时会发生什么？如何审查它们产出的所有内容？如何跟踪不仅发生了什么变化，还包括为什么要做出更改？
-因此一个紧迫问题就是：下一代 GitHub 会是什么样子的？
-我们希望您通过构建它来帮助我们找到答案。
-今年早些时候，我们推出了 Artifacts。这是一个版本化文件系统，兼容 Git，可扩展到数百万个代码库。从一开始，我们就将 Artifacts 设计为一套可编程原语，开发者可以利用这些原语构建自己的产品、工作流程和抽象概念。
+Cookie 是什么
+	cookie的中文翻译是曲奇，小甜饼的意思。cookie其实就是一些数据信息，类型为“小型文本文件”，存储 于电脑上的文本文件中。
+
+Cookie有什么用
+	我们想象一个场景，当我们打开一个网站时，如果这个网站我们曾经登录过，那么当我们再次打开网站时，发现就不需要再次登录了，而是直接进入了首页。例如bilibili，csdn等网站。
+
+	这是怎么做到的呢？其实就是游览器保存了我们的cookie，里面记录了一些信息，当然，这些cookie是服务器 创建后返回给游览器的。游览器只进行了保存。下面展示bilibili网站保存的cookie。
+
+
+Cookie的表示 
+        一般情况下，cookie是以键值对进行表示的(key-value)，例如name=jack，这个就表示cookie的名字是name，cookie携带的值是jack。
+
+Cookie的组成
+	下面我自己写了一个简易Servlet来设置cookie，我们游览器抓包进行查看。然后进行分析
+
+	以下是cookie中常用属性的解释。
+
+`Name`：这个是cookie的名字
+`Value`：这个是cooke的值
+`Path`：这个定义了Web站点上可以访问该Cookie的目录
+`Expires`：这个值表示cookie的过期时间，也就是有效值，cookie在这个值之前都有效。
+`Size`：这个表示cookie的大小
+	想要完全了解所有cookie属性，请参考百度知道：cookie
+
+Cookie的HTTP 传输
+	我们还是通过抓包进行查看。首先查看cookie在HTTP请求中是怎样进行表示的。
+
+HTTP请求
+	我们在发送HTTP请求时，发现游览器将我们的cookie都进行了携带(注意：游览器只会携带在当前请求的url中包含了该cookie中path值的cookie)，并且是以key：value的形式进行表示的。多个cookie用；进行隔开。 
+
+	我们再来查看cookie在HTTP响应中是如何进行表示的。
+
+HTTP响应
+	我在服务器设置了2个cookie，返回给游览器。通过抓包，我们发现在HTTP响应中， cookie的表示形式是，Set-Cookie：cookie的名字，cookie的值。如果有多个cookie，那么在HTTP响应中就使用多个Set-Cookie进行表示。
+
+Cookie的生命周期 
+        cookie有2种存储方式，一种是会话性，一种是持久性。
+
+会话性：如果cookie为会话性，那么cookie仅会保存在客户端的内存中，当我们关闭客服端时cookie也就失效了
+持久性：如果cookie为持久性，那么cookie会保存在用户的硬盘中，直至生存期结束或者用户主动将其销毁。
+        cookie我们是可以进行设置的，我们可以人为设置cookie的有效时间，什么时候创建，什么时候销毁。
+
+Cookie使用的常见方法
+        下面，我对java中Cookie对象的方法进行讲解
+
+`new Cookie(String name, String value)`：创建一个Cookie对象，必须传入cookie的名字和cookie的值
+`getValue()`：得到cookie保存的值
+`getName()`：获取cookie的名字
+`setMaxAge(int expiry)`：设置cookie的有效期，默认为-1。这个如果设置负数，表示客服端关闭，cookie就会删除。0表示马上删除。正数表示有效时间，单位是秒。
+`setPath(String uri)`：设置cookie的作用域
+        HttpServletRequest和HttpServletResponse对Cookie进行操作的常见方法
+
+`response.addCookie(Cookie cookie)`：将cookie给客户端进行保存
+`resquest.getCookies()`：得到客服端传过来的所有cookie对象
+Cookie应用实例
+        我们使用cookie来实现一个功能，就是当用户登录成功后，我们在下次登录时就自动填入用户名和密码。这个功能我们使用cookie和jsp页面来完成(用html页面 也可以，只不过要使用javascript，有点麻烦，所以就使用jsp进行演示)
+
+        我们首先写一个简单的jsp页面，就是一个登录页面
+
+        JSP页面
+```java
+<%@ page contentType="text/html;charset=UTF-8" language="java" isELIgnored="false" %>
+ 
+<html>
+  <head>
+    <title>登录</title>
+  </head>
+  <body>
+  <form action="${pageContext.request.contextPath}/main" method="post">
+    用户名：<input type="text" name="username" value="<%=request.getAttribute("username")%>"><br/>
+    密　码：<input type="password" name="password" value="<%=request.getAttribute("password")%>"><br/>
+    <input type="submit" value="登录">
+  </form>
+  </body>
+</html>
+```
+
+
+请求转发页面，我们是通过访问Servlet转发到jsp页面的，而不是直接访问。
+```java
+import javax.servlet.*;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.*;
+import java.io.IOException;
+ 
+@WebServlet("/cookieLogin")
+public class CookieLogin extends HttpServlet {
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        //设置默认值
+        request.setAttribute("username","");
+        request.setAttribute("password","");
+        //得到所有cookie
+        Cookie[] cookies = request.getCookies();
+        //对所有cookie进行遍历
+        for (Cookie cookie : cookies) {
+            //得到存储用户名和密码的cookie并且存入request域中
+            if ("username".equals(cookie.getName())){
+                String value = cookie.getValue();
+                request.setAttribute("username",value);
+            }
+            if("password".equals(cookie.getName())){
+                String value = cookie.getValue();
+                request.setAttribute("password",value);
+            }
+        }
+        //转发到login.jsp页面
+        request.getRequestDispatcher("/login.jsp").forward(request,response);
+    }
+ 
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        this.doGet(request, response);
+    }
+}
+```
+
+运行
+
+登录成功后的首页
+```java
+import javax.servlet.*;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.*;
+import java.io.IOException;
+ 
+@WebServlet("/main")
+public class MainServlet extends HttpServlet {
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        //设置响应类型
+        response.setContentType("text/html;charset=utf-8");
+        //得到用户名和密码
+        String username = request.getParameter("username");
+        String password = request.getParameter("password");
+        //判断是否登录成功
+        if ("root".equals(username) && "root".equals(password)) {
+            //编写cookie
+            Cookie usernameCookie = new Cookie("username", username);
+            Cookie passwordCookie = new Cookie("password", password);
+            //设置有效时间，我这里设置3天有效
+            usernameCookie.setMaxAge(60 * 60 * 24 * 3);
+            passwordCookie.setMaxAge(60 * 60 * 24 * 3);
+            //存入客户端
+            response.addCookie(usernameCookie);
+            response.addCookie(passwordCookie);
+            //返回提示
+            response.getWriter().write("<h1>登录成功~~~~</h1>");
+        }else {
+            response.getWriter().write("<h1>登录失败....</h1>");
+        }
+    }
+ 
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        this.doGet(request, response);
+    }
+}
+```
+
+运行
+
+	下面我们来进行测试一下，首先访问http://localhost:8080/cs/cookieLogin，我们这里设置的虚拟路径是cs，下面是我们访问cookieLogin显示的页面。发现确实没有自动填写，因为我们还没有登录。游览器中也没有存有用户名和密码的cookie
+
+	输入正确的账号和密码进行登录。也就是账号和密码都输入root，页面显示登录成功
+
+	下面我们来查看游览器是否存储了用户名和密码的cookie
+
+	游览器确实存储了cookie，没有问题，接下来，我们关闭游览器后重新访问登录页面。 
+
+	我们一访问登录页面，用户名和密码就自动填写了，成功实现了功能
+
+总结 
+	Cookie就是一些数据，用于存储服务器返回给客服端的信息，客户端进行保存。在下一次访问该网站时，客户端会将保存的cookie一同发给服务器，服务器再利用cookie进行一些操作。利用cookie我们就可以实现自动登录，保存游览历史，身份验证等功能。

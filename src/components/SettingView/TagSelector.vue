@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue';
 import { useToast } from '@/stores/toast';
+import { config } from '@/config';
 
 const modelValue = defineModel<string[]>({ required: true });
 
@@ -37,6 +38,7 @@ async function addNew() {
 	draftInput.value?.focus();
 }
 
+const { tagLen } = config;
 /** 提交新标签：为空则取消加入 */
 function commitDraft() {
 	if (draft.value === null) return;
@@ -44,7 +46,11 @@ function commitDraft() {
 	const name = draft.value.trim();
 	draft.value = null;
 	if(name === '全部') {
-		toast.error('标签名称不能为<全部>');
+		toast.error('标签名称不能为「全部」');
+		return;
+	}
+	if(name.length >= tagLen) {
+		toast.error(`标签名称不能超过${tagLen}个字`);
 		return;
 	}
 
